@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tablero de Sonidos de la Granja</title>
+<meta name="description" content="Tablero interactivo de sonidos de animales de la granja para inicial y primeros grados de primaria.">
+<meta name="theme-color" content="#7cc8f0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='55' r='40' fill='%23ffd93b' stroke='%233a2614' stroke-width='6'/%3E%3Cpath d='M42 62h16l-8 12z' fill='%23ff8c1a'/%3E%3Ccircle cx='38' cy='48' r='6' fill='%233a2614'/%3E%3Ccircle cx='62' cy='48' r='6' fill='%233a2614'/%3E%3C/svg%3E">
+<script>
+  // Carga la fuente redondeada solo si hay internet; sin conexión se usa la del sistema.
+  if (navigator.onLine !== false) {
+    var enlaceFuente = document.createElement('link');
+    enlaceFuente.rel = 'stylesheet';
+    enlaceFuente.href = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap';
+    document.head.appendChild(enlaceFuente);
+  }
+</script>
+<style>
+/* =========================================================
+   ESTILOS BASE
+   ========================================================= */
+:root {
+  --tinta: #3a2614;
+  --tinta-suave: #5c4330;
+  --crema: #fffaf0;
+  --amarillo: #ffd23f;
+  --verde: #2f7d22;
+  --verde-claro: #d8f5c4;
+  --azul-foco: #1a56c4;
+  --madera: #8f5424;
+  --sombra: 0 6px 0 rgba(58, 38, 20, .35);
+  --radio: 28px;
+  --fuente: 'Baloo 2', 'Fredoka', ui-rounded, 'Arial Rounded MT Bold', 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--fuente);
+  color: var(--tinta);
+  background: #bfe9fb;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+button:not(:disabled) { cursor: pointer; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 5px solid var(--azul-foco); outline-offset: 4px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+body.sin-texto .texto-opcional { display: none !important; }
+body.sin-voz .btn-voz, body.sin-voz .btn-oir { display: none !important; }
+
+/* =========================================================
+   FONDO DE GRANJA
+   ========================================================= */
+.fondo {
+  position: fixed; inset: 0; z-index: -1; overflow: hidden;
+  background: linear-gradient(#6ec2ee 0%, #a9def7 45%, #d6f2ff 70%);
+}
+.fondo svg { display: block; }
+.sol { position: absolute; left: 2%; top: 1.5%; width: clamp(80px, 11vw, 170px); }
+.sol .rayos { transform-origin: 50% 50%; animation: girar 60s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.nube { position: absolute; left: 0; width: clamp(110px, 15vw, 250px); animation: nube-viaje linear infinite; opacity: .95; }
+.nube.n1 { top: 4%;  animation-duration: 95s;  animation-delay: -10s; }
+.nube.n2 { top: 15%; animation-duration: 120s; animation-delay: -60s; width: clamp(90px, 11vw, 190px); }
+.nube.n3 { top: 9%;  animation-duration: 140s; animation-delay: -100s; width: clamp(130px, 18vw, 290px); }
+@keyframes nube-viaje { from { transform: translateX(-35vw); } to { transform: translateX(110vw); } }
+.colinas { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 46vh; }
+.granero { position: absolute; right: 3%; bottom: 17vh; width: clamp(130px, 17vw, 300px); }
+.cerca {
+  position: absolute; left: 0; right: 0; bottom: 5vh; height: clamp(56px, 9vh, 100px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='100' viewBox='0 0 120 100'%3E%3Crect x='-4' y='28' width='128' height='14' fill='%23d39a5c' stroke='%237a4b22' stroke-width='4'/%3E%3Crect x='-4' y='62' width='128' height='14' fill='%23d39a5c' stroke='%237a4b22' stroke-width='4'/%3E%3Cpath d='M18 100V20l12-12 12 12v80z' fill='%23e0a86a' stroke='%237a4b22' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}
+.pasto { position: absolute; left: 0; right: 0; bottom: 0; height: 6vh; background: #4f9e34; border-top: 4px solid #3f8a28; }
+
+/* =========================================================
+   CABECERA Y NAVEGACIÓN
+   ========================================================= */
+.cabecera {
+  display: flex; flex-direction: column; align-items: center;
+  gap: clamp(8px, 1.4vh, 14px);
+  padding: clamp(10px, 1.6vh, 18px) 10px clamp(8px, 1.4vh, 14px);
+}
+.letrero {
+  margin: 0; text-align: center; line-height: 1.05;
+  font-size: clamp(1.6rem, 3.4vw, 2.9rem); font-weight: 800;
+  color: #fff; background: var(--madera);
+  border: 4px solid var(--tinta); border-radius: 20px;
+  padding: 6px clamp(14px, 2vw, 28px) 4px;
+  box-shadow: var(--sombra);
+  text-shadow: 0 3px 0 var(--tinta);
+  max-width: calc(100% - 120px);
+}
+.modos { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(6px, 1vw, 12px); }
+.btn-modo {
+  min-height: 52px; padding: 4px clamp(14px, 1.6vw, 24px);
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem); font-weight: 800;
+  background: var(--crema); border: 4px solid var(--tinta); border-radius: 999px;
+  box-shadow: 0 4px 0 rgba(58, 38, 20, .35);
+  transition: transform .12s, background-color .12s;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .letrero { font-size: 1.3rem; }
+  .btn-modo { font-size: 1.02rem; min-height: 48px; padding: 2px 12px; }
+  .consigna { font-size: 1.05rem; line-height: 1.3; padding: 2px 14px; }
+}
+.btn-modo:hover { background: #fff3c4; }
+.btn-modo:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(58, 38, 20, .35); }
+.btn-modo[aria-current="page"] { background: var(--amarillo); }
+
+.btn-panel {
+  position: fixed; top: 10px; right: 10px; z-index: 40;
+  width: 48px; height: 48px; padding: 9px;
+  border: 3px solid var(--tinta); border-radius: 50%;
+  background: rgba(255, 250, 240, .8); opacity: .75;
+  transition: opacity .15s, transform .3s;
+}
+.btn-panel:hover, .btn-panel:focus-visible { opacity: 1; transform: rotate(45deg); }
+.btn-panel svg { width: 100%; height: 100%; display: block; }
+
+main { padding-bottom: 24px; }
+.consigna {
+  margin: 0 auto clamp(8px, 1.4vh, 16px); width: fit-content; max-width: calc(100% - 24px);
+  text-align: center; font-size: clamp(1.3rem, 2vw, 1.8rem); font-weight: 700;
+  background: rgba(255, 250, 240, .9); border: 3px solid var(--tinta); border-radius: 999px;
+  padding: 2px 22px;
+}
+
+/* =========================================================
+   MODO EXPLORAR: TARJETAS
+   ========================================================= */
+.cuadricula {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 1.6vw, 24px);
+  max-width: 1500px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px);
+}
+@media (min-width: 900px) { .cuadricula { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.tarjeta {
+  position: relative; display: flex; flex-direction: column;
+  background: var(--crema); border: 4px solid var(--tinta); border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  transition: transform .15s, background-color .2s;
+}
+.tarjeta:hover { transform: translateY(-3px); }
+.tarjeta.activa { background: #fff2b8; }
+.tarjeta-btn {
+  appearance: none; -webkit-appearance: none; display: block; width: 100%;
+  min-height: 120px; padding: clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px) 0;
+  border: 0; background: none; border-radius: calc(var(--radio) - 4px);
+}
+.tarjeta-btn:active .ilustracion { transform: scale(.97); }
+.ilustracion {
+  position: relative; display: block; width: 100%;
+  background: var(--color, #eee); border-radius: 20px;
+  border: 3px solid rgba(58, 38, 20, .22);
+  transition: transform .12s;
+}
+.ilustracion svg {
+  display: block; width: 100%; height: clamp(110px, 22vh, 250px);
+  overflow: visible; transform-origin: 50% 100%;
+}
+.globo {
+  position: absolute; left: 50%; top: -18px; z-index: 3;
+  width: max-content; max-width: calc(100% + 10px);
+  padding: 2px 14px; text-align: center; line-height: 1.1;
+  font-size: clamp(1.5rem, 2.2vw, 2.2rem); font-weight: 800;
+  background: #fff; border: 4px solid var(--tinta); border-radius: 22px;
+  transform: translate(-50%, 0) scale(0); transform-origin: 50% 100%;
+  pointer-events: none;
+}
+.globo::after {
+  content: ''; position: absolute; left: 50%; bottom: -14px; width: 18px; height: 18px;
+  background: #fff; border-right: 4px solid var(--tinta); border-bottom: 4px solid var(--tinta);
+  transform: translateX(-50%) rotate(45deg);
+}
+.tarjeta.activa .globo { transform: translate(-50%, 0) scale(1); }
+.tarjeta.animando .globo { animation: globo-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes globo-pop {
+  from { transform: translate(-50%, 0) scale(0); }
+  to   { transform: translate(-50%, 0) scale(1); }
+}
+.tarjeta-pie {
+  position: relative; flex: 1;
+  display: grid; place-items: center;
+  min-height: calc(2 * 1.12em + 18px);
+  padding: 6px 8px 10px; text-align: center; line-height: 1.12;
+  font-size: clamp(1.5rem, 2vw, 2rem); font-weight: 800;
+}
+body.sin-texto .tarjeta-pie { min-height: 76px; }
+.tarjeta-pie > * { grid-area: 1 / 1; min-width: 0; max-width: 100%; }
+.frase-fila { display: flex; align-items: center; justify-content: center; gap: 8px; visibility: hidden; }
+.tarjeta.activa .nombre { visibility: hidden; }
+.tarjeta.activa .frase-fila { visibility: visible; }
+.btn-voz, .btn-oir {
+  flex: 0 0 auto; width: 56px; height: 56px; padding: 10px;
+  border: 3px solid var(--tinta); border-radius: 50%;
+  background: var(--amarillo); box-shadow: 0 3px 0 rgba(58, 38, 20, .35);
+}
+.btn-voz svg, .btn-oir svg { display: block; width: 100%; height: 100%; }
+.btn-voz:active, .btn-oir:active { transform: translateY(2px); box-shadow: none; }
+/* En tarjetas angostas el parlante se apoya en la esquina del dibujo */
+@media (max-width: 599px) {
+  .tarjeta-pie .btn-voz { position: absolute; right: 6px; top: -34px; width: 50px; height: 50px; z-index: 2; }
+  body.sin-texto .tarjeta-pie .btn-voz { position: static; }
+}
+
+/* =========================================================
+   ANIMACIONES DE LOS ANIMALES
+   ========================================================= */
+.ilustracion svg .cabeza, .ilustracion svg .pata-tras, .ilustracion svg .cola,
+.ilustracion svg .hocico, .ilustracion svg .oreja, .ilustracion svg .ojo { transform-box: fill-box; }
+.ojo { transform-origin: 50% 50%; animation: parpadeo 5s infinite; animation-delay: var(--retraso, 0s); }
+@keyframes parpadeo { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+
+/* Caballo: patea */
+.animando [data-animal="caballo"] .pata-tras { animation: patear .38s ease-in-out 3; }
+.animando [data-animal="caballo"] .cabeza { animation: cabecear .38s ease-in-out 3; }
+.animando [data-animal="caballo"] .cola { animation: colear .38s ease-in-out 3; }
+@keyframes patear { 0%, 100% { transform: rotate(0); } 45% { transform: rotate(42deg); } 75% { transform: rotate(-6deg); } }
+@keyframes cabecear { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
+@keyframes colear { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(14deg); } }
+/* Vaca: mueve la cabeza */
+.animando [data-animal="vaca"] .cabeza { animation: negar 1.3s ease-in-out; }
+@keyframes negar {
+  0%, 100% { transform: rotate(0); } 15% { transform: rotate(-14deg); } 35% { transform: rotate(12deg); }
+  55% { transform: rotate(-9deg); } 75% { transform: rotate(6deg); }
+}
+/* Carnero: rebota esponjoso */
+.animando [data-animal="carnero"] svg { animation: rebotar 1.1s ease-in-out; }
+.animando [data-animal="carnero"] .cabeza { animation: negar 1s ease-in-out .1s; }
+@keyframes rebotar {
+  0%, 100% { transform: scale(1, 1); } 15% { transform: scale(1.1, .88); }
+  35% { transform: translateY(-8%) scale(.93, 1.08); } 55% { transform: scale(1.06, .94); } 75% { transform: scale(.98, 1.03); }
+}
+/* Gallina: picotea */
+.animando [data-animal="gallina"] .cabeza { animation: picotear .42s ease-in-out 3; }
+.animando [data-animal="gallina"] svg { animation: rebote-suave 1.26s ease-in-out; }
+@keyframes picotear { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(32deg); } }
+@keyframes rebote-suave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4%); } }
+/* Pato: se balancea */
+.animando [data-animal="pato"] svg { animation: balancear 1.2s ease-in-out; }
+@keyframes balancear {
+  0%, 100% { transform: rotate(0) translateX(0); } 20% { transform: rotate(-10deg) translateX(-5%); }
+  40% { transform: rotate(10deg) translateX(5%); } 60% { transform: rotate(-7deg) translateX(-3%); } 80% { transform: rotate(5deg) translateX(2%); }
+}
+/* Pollo: da saltitos */
+.animando [data-animal="pollo"] svg { animation: saltar .42s ease-in-out 3; }
+@keyframes saltar {
+  0%, 100% { transform: translateY(0) scale(1, 1); } 15% { transform: translateY(0) scale(1.1, .88); }
+  50% { transform: translateY(-20%) scale(.95, 1.06); } 85% { transform: translateY(0) scale(1.06, .94); }
+}
+/* Cerdo: olfatea y mueve las orejas */
+.animando [data-animal="cerdo"] .hocico { animation: olfatear .3s ease-in-out 4; transform-origin: 50% 50%; }
+.animando [data-animal="cerdo"] .oreja-izq { animation: oreja-izq .3s ease-in-out 4; }
+.animando [data-animal="cerdo"] .oreja-der { animation: oreja-der .3s ease-in-out 4; }
+.animando [data-animal="cerdo"] svg { animation: rebote-suave .6s ease-in-out 2; }
+@keyframes olfatear { 50% { transform: scale(1.22, 1.14); } }
+@keyframes oreja-izq { 50% { transform: rotate(-18deg); } }
+@keyframes oreja-der { 50% { transform: rotate(18deg); } }
+/* Pavo: abre la cola y hace glu glu */
+.animando [data-animal="pavo"] .cola { animation: abanico 1.2s ease-in-out; }
+.animando [data-animal="pavo"] .cabeza { animation: gluglu .2s linear 6; }
+@keyframes abanico {
+  0%, 100% { transform: scale(1); } 30% { transform: scale(1.16); } 50% { transform: scale(.94); } 70% { transform: scale(1.1); }
+}
+@keyframes gluglu { 50% { transform: translateY(4%) rotate(5deg); } }
+
+/* =========================================================
+   JUEGOS
+   ========================================================= */
+.juego { max-width: 1400px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px); }
+.tablero {
+  background: rgba(255, 250, 240, .94); border: 4px solid var(--tinta); border-radius: var(--radio);
+  box-shadow: var(--sombra); padding: clamp(12px, 2vw, 26px);
+  display: flex; flex-direction: column; align-items: center; gap: clamp(10px, 1.8vh, 20px);
+}
+.juego-cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; width: 100%; }
+.juego-titulo { margin: 0; font-size: clamp(1.6rem, 3vw, 2.6rem); line-height: 1.1; }
+.progreso-zona { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.progreso { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.progreso li { width: clamp(30px, 3.6vw, 46px); }
+.progreso svg { display: block; width: 100%; fill: #fff; stroke: var(--tinta); stroke-width: 3; }
+.progreso li.oro svg { fill: #ffc21a; }
+.progreso li.plata svg { fill: #ffe7a0; }
+.progreso li.actual svg { fill: #fff3c4; animation: latido 1.2s ease-in-out infinite; }
+@keyframes latido { 50% { transform: scale(1.15); } }
+.ronda-texto { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.pregunta { margin: 0; text-align: center; font-size: clamp(1.6rem, 2.8vw, 2.4rem); font-weight: 800; line-height: 1.15; }
+
+.btn-escuchar {
+  display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+  min-height: 96px; padding: 8px clamp(28px, 4vw, 56px);
+  font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #fff;
+  background: var(--verde); border: 5px solid var(--tinta); border-radius: 999px;
+  box-shadow: 0 7px 0 rgba(58, 38, 20, .45);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .3);
+  animation: invitar 2s ease-in-out infinite;
+}
+.btn-escuchar svg { width: 1em; height: 1em; }
+.btn-escuchar:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(58, 38, 20, .45); }
+@keyframes invitar { 50% { transform: scale(1.05); } }
+
+.opciones { display: grid; gap: clamp(10px, 1.6vw, 22px); width: 100%; }
+.opciones-4, .opciones-3, .opciones-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px) { .opciones-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.opcion {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: 120px; padding: 10px 10px 6px;
+  background: var(--crema); border: 4px solid var(--tinta); border-radius: var(--radio);
+  box-shadow: var(--sombra); transition: transform .15s, opacity .2s, filter .2s;
+}
+.opcion:not(:disabled):hover { transform: translateY(-3px); }
+.opcion:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(58, 38, 20, .35); }
+.opcion .ilustracion svg { height: clamp(100px, 20vh, 230px); }
+@media (max-width: 599px) { .opcion .ilustracion svg { height: clamp(90px, 15vh, 140px); } }
+.opcion .nombre { font-size: clamp(1.5rem, 2vw, 2rem); font-weight: 800; }
+.opcion.incorrecta { opacity: .45; filter: grayscale(.7); }
+.opcion.apagada { opacity: .55; }
+.opcion.correcta, .btn-onoma.correcta { background: var(--verde-claro); border-color: var(--verde); box-shadow: 0 0 0 6px #ffd23f, var(--sombra); }
+.temblar { animation: temblar .5s ease-in-out; }
+@keyframes temblar {
+  0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+}
+
+/* Juego inverso */
+.inverso { display: grid; grid-template-columns: 1fr; gap: clamp(12px, 2vw, 28px); width: 100%; align-items: center; }
+@media (min-width: 900px) { .inverso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.animal-grande {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px; border: 4px solid var(--tinta); border-radius: var(--radio); background: #fff;
+}
+.animal-grande .ilustracion svg { height: clamp(150px, 36vh, 380px); }
+.animal-grande .nombre { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; }
+.opciones-onoma { display: flex; flex-direction: column; gap: clamp(10px, 1.6vh, 18px); }
+.fila-onoma { display: flex; align-items: center; gap: 10px; }
+.btn-onoma {
+  flex: 1; min-height: 88px; padding: 6px 16px;
+  font-size: clamp(1.8rem, 3.2vw, 2.7rem); font-weight: 800; line-height: 1.1;
+  background: var(--crema); border: 4px solid var(--tinta); border-radius: 24px;
+  box-shadow: var(--sombra); transition: transform .15s, opacity .2s;
+}
+.btn-onoma:not(:disabled):hover { background: #fff3c4; }
+.btn-onoma:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(58, 38, 20, .35); }
+.btn-onoma.incorrecta { opacity: .45; }
+.btn-onoma.apagada { opacity: .55; }
+.btn-oir { width: 64px; height: 64px; }
+
+.juego-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; width: 100%; min-height: 72px; }
+.mensaje {
+  margin: 0; text-align: center; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; line-height: 1.15;
+}
+.mensaje.exito { color: var(--verde); }
+.mensaje.animo { color: #9a4a00; }
+.mensaje:not(:empty) { animation: aparecer .35s ease-out; }
+@keyframes aparecer { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.btn-grande {
+  min-height: 72px; padding: 6px clamp(22px, 3vw, 40px);
+  font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 800;
+  border: 4px solid var(--tinta); border-radius: 999px; box-shadow: var(--sombra);
+  background: var(--amarillo);
+}
+.btn-grande:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(58, 38, 20, .35); }
+.btn-grande.secundario { background: var(--crema); }
+.btn-siguiente { animation: aparecer .35s ease-out; }
+
+/* Pantalla de logro */
+.logro { max-width: 900px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px); }
+.logro .tablero { text-align: center; }
+.trofeo { width: clamp(110px, 18vh, 190px); animation: latido 1.6s ease-in-out infinite; }
+.trofeo svg { display: block; width: 100%; fill: #ffc21a; stroke: var(--tinta); stroke-width: 2.5; }
+.logro h2 { margin: 0; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1; }
+.logro p { margin: 0; font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 700; }
+.logro .progreso li { width: clamp(36px, 6vw, 64px); }
+.logro-botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+
+/* =========================================================
+   PANEL DOCENTE
+   ========================================================= */
+.panel-fondo {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(30, 20, 10, .55);
+}
+.panel {
+  width: min(600px, 100%); max-height: calc(100dvh - 32px); max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--crema); border: 4px solid var(--tinta); border-radius: 24px;
+  padding: 18px clamp(16px, 3vw, 26px); font-size: 1.15rem; box-shadow: var(--sombra);
+}
+@supports (height: 100dvh) { .panel { max-height: calc(100dvh - 32px); } }
+.panel h2 { margin: 0 0 6px; font-size: 1.8rem; }
+.panel-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 2px dashed rgba(58, 38, 20, .25); }
+.panel-fila label { font-weight: 700; }
+.panel input[type="checkbox"] { width: 28px; height: 28px; accent-color: var(--verde); flex: 0 0 auto; margin: 0; }
+.panel input[type="range"] { width: min(220px, 50vw); accent-color: var(--verde); }
+.panel fieldset { border: 0; padding: 10px 0; margin: 0; border-bottom: 2px dashed rgba(58, 38, 20, .25); }
+.panel legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
+.lista-animales { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.lista-animales label {
+  display: flex; align-items: center; gap: 8px; padding: 4px 8px; font-weight: 700;
+  border: 3px solid rgba(58, 38, 20, .3); border-radius: 14px; background: #fff;
+}
+.lista-animales .mini { width: 40px; height: 40px; border-radius: 10px; background: var(--color); flex: 0 0 auto; }
+.lista-animales .mini svg { width: 100%; height: 100%; display: block; }
+.panel .nota { font-size: 1rem; color: var(--tinta-suave); margin: 6px 0 0; }
+.panel .aviso { color: #9a4a00; font-weight: 700; }
+.panel-botones { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 14px; }
+.btn-panel-accion {
+  min-height: 48px; padding: 4px 18px; font-weight: 800; font-size: 1.15rem;
+  border: 3px solid var(--tinta); border-radius: 999px; background: #fff; box-shadow: 0 3px 0 rgba(58, 38, 20, .35);
+}
+.btn-panel-accion.principal { background: var(--amarillo); }
+.btn-chico { min-height: 40px; font-size: 1rem; padding: 2px 14px; margin-top: 8px; }
+
+/* Confeti */
+#confeti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 55; }
+
+/* =========================================================
+   MOVIMIENTO REDUCIDO
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important; scroll-behavior: auto !important;
+  }
+  .nube, .sol .rayos, .ojo { animation: none !important; }
+  .nube.n1 { left: 8%; } .nube.n2 { left: 62%; } .nube.n3 { left: 34%; }
+  /* Sin movimiento, la tarjeta activa se resalta con un brillo */
+  .animando .ilustracion, .opcion.animando, .animal-grande.animando { box-shadow: 0 0 0 6px #ffd23f; }
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     FONDO DE GRANJA (decorativo)
+     ========================================================= -->
+<div class="fondo" aria-hidden="true">
+  <svg class="sol" viewBox="0 0 200 200">
+    <g class="rayos" stroke="#f5a524" stroke-width="10" stroke-linecap="round">
+      <line x1="172" y1="100" x2="194" y2="100"/><line x1="162.4" y1="136" x2="181.4" y2="147"/>
+      <line x1="136" y1="162.4" x2="147" y2="181.4"/><line x1="100" y1="172" x2="100" y2="194"/>
+      <line x1="64" y1="162.4" x2="53" y2="181.4"/><line x1="37.6" y1="136" x2="18.6" y2="147"/>
+      <line x1="28" y1="100" x2="6" y2="100"/><line x1="37.6" y1="64" x2="18.6" y2="53"/>
+      <line x1="64" y1="37.6" x2="53" y2="18.6"/><line x1="100" y1="28" x2="100" y2="6"/>
+      <line x1="136" y1="37.6" x2="147" y2="18.6"/><line x1="162.4" y1="64" x2="181.4" y2="53"/>
+    </g>
+    <circle cx="100" cy="100" r="60" fill="#ffd23f" stroke="#e69500" stroke-width="6"/>
+    <path d="M76 92 q8 -10 16 0 M108 92 q8 -10 16 0" fill="none" stroke="#7a4b00" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="72" cy="112" r="8" fill="#ffab5c"/><circle cx="128" cy="112" r="8" fill="#ffab5c"/>
+    <path d="M84 118 q16 16 32 0" fill="none" stroke="#7a4b00" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <svg class="nube n1" viewBox="0 0 200 100"><path d="M40 82C14 82 14 50 40 50c2-22 32-28 44-10 10-22 50-22 56 4 24-6 42 14 30 34-2 4-6 4-10 4z" fill="#fff" stroke="#cfe8f5" stroke-width="4"/></svg>
+  <svg class="nube n2" viewBox="0 0 200 100"><path d="M40 82C14 82 14 50 40 50c2-22 32-28 44-10 10-22 50-22 56 4 24-6 42 14 30 34-2 4-6 4-10 4z" fill="#fff" stroke="#cfe8f5" stroke-width="4"/></svg>
+  <svg class="nube n3" viewBox="0 0 200 100"><path d="M40 82C14 82 14 50 40 50c2-22 32-28 44-10 10-22 50-22 56 4 24-6 42 14 30 34-2 4-6 4-10 4z" fill="#fff" stroke="#cfe8f5" stroke-width="4"/></svg>
+  <svg class="colinas" viewBox="0 0 1000 400" preserveAspectRatio="none">
+    <path d="M0 150C150 50 300 70 450 140s300-80 550-40v250H0z" fill="#9bd774"/>
+    <path d="M0 240c200-80 380-50 520 0s300-30 480-10v170H0z" fill="#74c352"/>
+    <path d="M0 330c250-30 600-10 1000-20v90H0z" fill="#5eae3f"/>
+  </svg>
+  <svg class="granero" viewBox="0 0 220 200" stroke="#3a2614" stroke-width="6" stroke-linejoin="round">
+    <rect x="36" y="84" width="148" height="110" fill="#d9412e"/>
+    <path d="M12 94L110 22l98 72-16 8-82-58-82 58z" fill="#8f2f22"/>
+    <rect x="94" y="60" width="32" height="26" rx="4" fill="#fff4d6"/>
+    <rect x="72" y="118" width="76" height="76" fill="#a8301f"/>
+    <path d="M72 118l76 76M148 118l-76 76" stroke="#fffaf0" stroke-width="7"/>
+    <rect x="72" y="118" width="76" height="76" fill="none" stroke="#fffaf0" stroke-width="7"/>
+  </svg>
+  <div class="cerca"></div>
+  <div class="pasto"></div>
+</div>
+
+<!-- =========================================================
+     CABECERA
+     ========================================================= -->
+<header class="cabecera">
+  <h1 class="letrero">Tablero de Sonidos de la Granja</h1>
+  <nav class="modos" aria-label="Modos de juego">
+    <button type="button" class="btn-modo" data-modo="explorar" aria-current="page">Explorar</button>
+    <button type="button" class="btn-modo" data-modo="quien">¿Quién hace este sonido?</button>
+    <button type="button" class="btn-modo" data-modo="cual">¿Qué animal es?</button>
+  </nav>
+</header>
+
+<button type="button" class="btn-panel" id="btn-panel" aria-label="Abrir panel docente" aria-haspopup="dialog" aria-expanded="false"></button>
+
+<main id="principal">
+  <!-- Modo 1: Explorar -->
+  <section id="modo-explorar" class="modo" aria-labelledby="titulo-explorar">
+    <h2 id="titulo-explorar" class="sr-only">Explorar los sonidos</h2>
+    <p class="consigna">Toca un animal para escucharlo</p>
+    <div class="cuadricula" id="cuadricula"></div>
+  </section>
+
+  <!-- Modos 2 y 3: juegos -->
+  <section id="modo-juego" class="modo juego" aria-labelledby="juego-titulo" hidden>
+    <div class="tablero">
+      <div class="juego-cabecera">
+        <h2 class="juego-titulo" id="juego-titulo"></h2>
+        <div class="progreso-zona">
+          <ol class="progreso" id="progreso"></ol>
+          <p class="ronda-texto" id="ronda-texto"></p>
+        </div>
+      </div>
+      <div class="juego-cuerpo" id="juego-cuerpo" style="width:100%"></div>
+      <div class="juego-pie">
+        <p class="mensaje" id="mensaje" aria-live="polite"></p>
+        <button type="button" class="btn-grande btn-siguiente" id="btn-siguiente" hidden>¡Siguiente!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pantalla de logro -->
+  <section id="modo-logro" class="modo logro" aria-labelledby="logro-titulo" hidden>
+    <div class="tablero">
+      <div class="trofeo" id="trofeo"></div>
+      <h2 id="logro-titulo">¡Lo lograste!</h2>
+      <p id="logro-texto"></p>
+      <ol class="progreso" id="logro-estrellas"></ol>
+      <p id="logro-animo"></p>
+      <div class="logro-botones">
+        <button type="button" class="btn-grande" id="btn-otra-vez">Jugar otra vez</button>
+        <button type="button" class="btn-grande secundario" id="btn-volver">Volver a explorar</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- =========================================================
+     PANEL DOCENTE
+     ========================================================= -->
+<div class="panel-fondo" id="panel-fondo" hidden>
+  <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-titulo">
+    <h2 id="panel-titulo">Panel docente</h2>
+    <div class="panel-fila">
+      <label for="pref-voz">Voz que lee las frases</label>
+      <input type="checkbox" id="pref-voz">
+    </div>
+    <p class="nota aviso" id="nota-voz" hidden>Este navegador no tiene voz en español disponible.</p>
+    <div class="panel-fila">
+      <label for="pref-volumen">Volumen <span id="volumen-valor"></span></label>
+      <input type="range" id="pref-volumen" min="0" max="100" step="5">
+    </div>
+    <div class="panel-fila">
+      <label for="pref-texto">Mostrar textos (desactívalo para niños que aún no leen)</label>
+      <input type="checkbox" id="pref-texto">
+    </div>
+    <fieldset>
+      <legend>Animales que entran en los juegos</legend>
+      <div class="lista-animales" id="lista-animales"></div>
+      <button type="button" class="btn-panel-accion btn-chico" id="btn-todos">Marcar todos</button>
+      <p class="nota aviso" id="nota-animales" hidden>Debe quedar al menos un animal.</p>
+    </fieldset>
+    <p class="nota" id="estado-audio"></p>
+    <div class="panel-botones">
+      <button type="button" class="btn-panel-accion" id="btn-pantalla">Pantalla completa</button>
+      <button type="button" class="btn-panel-accion principal" id="btn-cerrar-panel">Listo</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confeti" aria-hidden="true"></canvas>
+<div id="anuncio" class="sr-only" aria-live="polite"></div>
+<noscript><p class="consigna">Para usar el tablero, activa JavaScript en el navegador.</p></noscript>
+
+<script>
+(function () {
+'use strict';
+
+/* =========================================================
+   1. UTILIDADES
+   ========================================================= */
+var $ = function (sel, raiz) { return (raiz || document).querySelector(sel); };
+var $$ = function (sel, raiz) { return Array.prototype.slice.call((raiz || document).querySelectorAll(sel)); };
+
+// Baraja una copia de la lista (Fisher-Yates)
+function mezclar(lista) {
+  var a = lista.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function reducirMovimiento() {
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function capitalizar(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+// "El caballo relincha"
+function frase(a) { return capitalizar(a.articulo) + ' ' + a.nombre.toLowerCase() + ' ' + a.verbo; }
+// Vuelve a disparar una animación CSS quitando y poniendo la clase
+function reiniciarAnimacion(el, clase) {
+  el.classList.remove(clase);
+  void el.offsetWidth;
+  el.classList.add(clase);
+}
+function porId(id) {
+  for (var i = 0; i < ANIMALES.length; i++) if (ANIMALES[i].id === id) return ANIMALES[i];
+  return null;
+}
+// Mensaje para lectores de pantalla
+function anunciar(texto) {
+  var el = $('#anuncio');
+  el.textContent = '';
+  setTimeout(function () { el.textContent = texto; }, 40);
+}
+
+/* ---------- Piezas de dibujo reutilizables ---------- */
+function ojo(cx, cy, r) {
+  return '<g class="ojo"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke-width="3.5"/>' +
+    '<circle cx="' + (cx + r * 0.12) + '" cy="' + (cy + r * 0.1) + '" r="' + (r * 0.6) + '" fill="#2b1a0e" stroke="none"/>' +
+    '<circle cx="' + (cx + r * 0.34) + '" cy="' + (cy - r * 0.16) + '" r="' + (r * 0.24) + '" fill="#fff" stroke="none"/></g>';
+}
+// Forma esponjosa (lana, plumas) hecha de círculos con un solo contorno exterior
+function esponja(circulos, color) {
+  var c = circulos.map(function (k) { return '<circle cx="' + k[0] + '" cy="' + k[1] + '" r="' + k[2] + '"/>'; }).join('');
+  return '<g fill="' + color + '" stroke-width="10">' + c + '</g><g fill="' + color + '" stroke="none">' + c + '</g>';
+}
+// Patita naranja con contorno
+function patita(d) {
+  return '<path d="' + d + '" fill="none" stroke-width="10"/><path d="' + d + '" fill="none" stroke="#f5a524" stroke-width="5"/>';
+}
+function colaPavo() {
+  var colores = ['#9c4f22', '#e0812f', '#c99a2e'], s = '';
+  for (var i = 0; i < 9; i++) {
+    var ang = -80 + i * 20;
+    s += '<g transform="rotate(' + ang + ' 100 128)">' +
+      '<path d="M100 128C82 100 82 38 100 22c18 16 18 78 0 106z" fill="' + colores[i % 3] + '"/>' +
+      '<path d="M91 44q9-12 18 0" fill="none" stroke="#fff3d6" stroke-width="6"/></g>';
+  }
+  return '<g class="cola" style="transform-origin:50% 100%">' + s + '</g>';
+}
+function lienzo(contenido) {
+  return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" stroke="#3a2614" stroke-width="5" ' +
+    'stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" focusable="false">' + contenido + '</svg>';
+}
+
+/* ---------- Íconos de la interfaz ---------- */
+var ICONO = {
+  parlante: '<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M6 18h8l11-9v30l-11-9H6z" fill="#3a2614" stroke="#3a2614" stroke-width="3" stroke-linejoin="round"/><path d="M31 17c3 2 4.5 4.5 4.5 7s-1.5 5-4.5 7M36.5 11c5 3.5 7.5 8 7.5 13s-2.5 9.5-7.5 13" fill="none" stroke="#3a2614" stroke-width="4" stroke-linecap="round"/></svg>',
+  play: '<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M12 6l30 18-30 18z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg>',
+  estrella: '<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 4l6.2 12.8 14 1.9-10.2 9.8 2.5 13.9L24 35.8l-12.5 6.6 2.5-13.9L3.8 18.7l14-1.9z" stroke-linejoin="round"/></svg>',
+  engranaje: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4L10.7 6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5z" fill="none" stroke="#3a2614" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="#3a2614" stroke-width="2"/></svg>'
+};
+
+/* =========================================================
+   2. DATOS DE LOS ANIMALES
+   Para agregar un animal: añade un objeto a esta lista y,
+   si quieres, una receta en SINTESIS con el mismo id.
+   ========================================================= */
+var ANIMALES = [
+  {
+    id: 'caballo', nombre: 'Caballo', articulo: 'el', onomatopeya: '¡Iiiiih!', verbo: 'relincha',
+    color: '#ffe2b8', audio: 'sonidos/caballo.mp3',
+    svg: lienzo(
+      '<path class="cola" style="transform-origin:90% 8%" d="M54 100C28 96 14 124 22 160c8-10 12-20 16-28 2 14 8 22 16 26-4-20-2-36 6-48z" fill="#5b3417"/>' +
+      '<rect x="78" y="128" width="19" height="46" rx="9" fill="#a8672f"/><rect x="75" y="166" width="25" height="14" rx="6" fill="#3a2614"/>' +
+      '<rect x="138" y="128" width="19" height="46" rx="9" fill="#a8672f"/><rect x="135" y="166" width="25" height="14" rx="6" fill="#3a2614"/>' +
+      '<g class="pata-tras" style="transform-origin:50% 6%"><rect x="54" y="120" width="20" height="54" rx="9" fill="#c27c3e"/><rect x="51" y="166" width="26" height="14" rx="6" fill="#3a2614"/></g>' +
+      '<rect x="116" y="128" width="19" height="46" rx="9" fill="#c27c3e"/><rect x="113" y="166" width="25" height="14" rx="6" fill="#3a2614"/>' +
+      '<ellipse cx="98" cy="114" rx="56" ry="34" fill="#c27c3e"/>' +
+      '<path d="M124 116c2-26 8-46 20-66l26 12c-6 20-10 38-10 58" fill="#c27c3e"/>' +
+      '<path d="M146 42c-14 10-20 30-22 56 8-12 12-22 18-30 0 12-4 22-6 34 12-16 16-36 22-56z" fill="#5b3417"/>' +
+      '<g class="cabeza" style="transform-origin:15% 75%">' +
+        '<path d="M150 42l2-26 14 20z" fill="#c27c3e"/>' +
+        '<ellipse cx="164" cy="62" rx="22" ry="31" transform="rotate(-35 164 62)" fill="#c27c3e"/>' +
+        '<ellipse cx="178" cy="82" rx="17" ry="14" fill="#ecc49a"/>' +
+        '<ellipse cx="185" cy="79" rx="3" ry="4.5" fill="#3a2614" stroke="none"/>' +
+        '<path d="M170 92q8 4 16-2" fill="none" stroke-width="3.5"/>' +
+        '<path d="M148 42c6-12 18-8 18 2-6-4-10-2-16 4z" fill="#5b3417"/>' +
+        ojo(160, 57, 8.5) +
+      '</g>'
+    )
+  },
+  {
+    id: 'vaca', nombre: 'Vaca', articulo: 'la', onomatopeya: '¡Muuu!', verbo: 'muge',
+    color: '#c9efb4', audio: 'sonidos/vaca.mp3',
+    svg: lienzo(
+      '<rect x="56" y="150" width="17" height="34" rx="7" fill="#fff"/><rect x="78" y="154" width="17" height="32" rx="7" fill="#fff"/>' +
+      '<rect x="105" y="154" width="17" height="32" rx="7" fill="#fff"/><rect x="127" y="150" width="17" height="34" rx="7" fill="#fff"/>' +
+      '<path d="M160 140c14 4 18 16 14 30" fill="none"/><path d="M168 166c4-2 12 2 10 10-6 2-12-2-10-10z" fill="#3a2614"/>' +
+      '<ellipse cx="100" cy="146" rx="62" ry="38" fill="#fff"/>' +
+      '<path d="M52 138c6-12 22-8 20 6-2 12-16 14-20 4z" fill="#3a2614" stroke="none"/>' +
+      '<ellipse cx="138" cy="160" rx="12" ry="9" fill="#3a2614" stroke="none"/>' +
+      '<path d="M68 114q32 14 64 0" fill="none" stroke="#d9412e" stroke-width="7"/>' +
+      '<circle cx="100" cy="128" r="11" fill="#ffd23f"/>' +
+      '<g class="cabeza" style="transform-origin:50% 92%">' +
+        '<path d="M66 44C56 36 54 24 60 14c4 12 12 18 20 22z" fill="#f3e3b5"/>' +
+        '<path d="M134 44c10-8 12-20 6-30-4 12-12 18-20 22z" fill="#f3e3b5"/>' +
+        '<ellipse cx="46" cy="64" rx="20" ry="11" transform="rotate(-20 46 64)" fill="#fff"/>' +
+        '<ellipse cx="44" cy="64" rx="10" ry="5" transform="rotate(-20 44 64)" fill="#f7a9b8" stroke="none"/>' +
+        '<ellipse cx="154" cy="64" rx="20" ry="11" transform="rotate(20 154 64)" fill="#fff"/>' +
+        '<ellipse cx="156" cy="64" rx="10" ry="5" transform="rotate(20 156 64)" fill="#f7a9b8" stroke="none"/>' +
+        '<rect x="60" y="30" width="80" height="82" rx="36" fill="#fff"/>' +
+        '<path d="M70 54c0-12 12-16 20-10 4 8-6 18-14 18-4-2-6-4-6-8z" fill="#3a2614" stroke="none"/>' +
+        '<ellipse cx="100" cy="98" rx="36" ry="21" fill="#f7a9b8"/>' +
+        '<ellipse cx="88" cy="97" rx="4.5" ry="6.5" fill="#a8435c" stroke="none"/>' +
+        '<ellipse cx="112" cy="97" rx="4.5" ry="6.5" fill="#a8435c" stroke="none"/>' +
+        ojo(82, 70, 10) + ojo(118, 70, 10) +
+      '</g>'
+    )
+  },
+  {
+    id: 'carnero', nombre: 'Carnero', articulo: 'el', onomatopeya: '¡Beee!', verbo: 'bala',
+    color: '#cfe0ff', audio: 'sonidos/carnero.mp3',
+    svg: lienzo(
+      '<rect x="64" y="158" width="13" height="30" rx="6" fill="#5a4a42"/><rect x="84" y="162" width="13" height="28" rx="6" fill="#5a4a42"/>' +
+      '<rect x="104" y="162" width="13" height="28" rx="6" fill="#5a4a42"/><rect x="124" y="158" width="13" height="30" rx="6" fill="#5a4a42"/>' +
+      esponja([[56, 132, 22], [74, 110, 24], [102, 102, 24], [128, 110, 24], [146, 132, 22], [128, 154, 24], [100, 160, 24], [72, 154, 24], [100, 132, 40]], '#f7efe0') +
+      '<g class="cabeza" style="transform-origin:50% 25%">' +
+        '<ellipse cx="72" cy="90" rx="13" ry="6" transform="rotate(25 72 90)" fill="#8a7468"/>' +
+        '<ellipse cx="128" cy="90" rx="13" ry="6" transform="rotate(-25 128 90)" fill="#8a7468"/>' +
+        '<ellipse cx="100" cy="88" rx="26" ry="32" fill="#8a7468"/>' +
+        '<ellipse cx="100" cy="106" rx="15" ry="11" fill="#b09a8e"/>' +
+        '<path d="M94 106q6 6 12 0" fill="none" stroke-width="3.5"/>' +
+        esponja([[86, 60, 12], [100, 54, 13], [114, 60, 12]], '#f7efe0') +
+        '<circle cx="64" cy="68" r="17" fill="#d9b77e"/><path d="M64 68m-7 0a7 7 0 1 1 7 7" fill="none" stroke-width="4"/>' +
+        '<circle cx="136" cy="68" r="17" fill="#d9b77e"/><path d="M136 68m7 0a7 7 0 1 0-7 7" fill="none" stroke-width="4"/>' +
+        ojo(90, 84, 8) + ojo(110, 84, 8) +
+      '</g>'
+    )
+  },
+  {
+    id: 'gallina', nombre: 'Gallina', articulo: 'la', onomatopeya: '¡Cloc, cloc!', verbo: 'cacarea',
+    color: '#fff1a6', audio: 'sonidos/gallina.mp3',
+    svg: lienzo(
+      patita('M88 160v24m0 0l-10 6m10-6l2 8m-2-8l10 4') + patita('M112 160v24m0 0l-10 6m10-6l2 8m-2-8l10 4') +
+      '<path d="M56 112C38 92 32 66 42 54c8 16 16 24 24 30-6-16-6-28 2-36 6 20 10 34 14 46z" fill="#8c3a12"/>' +
+      '<path d="M50 120c0-28 30-38 62-30 20 4 38 10 40 30 2 30-22 48-52 48s-50-18-50-48z" fill="#e3743a"/>' +
+      '<path d="M70 120c10-16 40-14 48 2-6 20-30 26-44 16z" fill="#b8541f"/>' +
+      '<path d="M84 124q8 6 16 2M80 132q10 6 20 2" fill="none" stroke-width="3.5"/>' +
+      '<g class="cabeza" style="transform-origin:20% 100%">' +
+        '<path d="M124 56c-2-12 8-14 10-6 0-12 12-12 12-2 2-8 12-4 8 8z" fill="#e23b3b"/>' +
+        '<circle cx="140" cy="74" r="24" fill="#e3743a"/>' +
+        '<path d="M160 68l20 8-20 8z" fill="#ffc22e"/>' +
+        '<path d="M157 84c7 3 7 15-1 15-6 0-6-10-2-15z" fill="#e23b3b"/>' +
+        ojo(146, 68, 8) +
+      '</g>'
+    )
+  },
+  {
+    id: 'pato', nombre: 'Pato', articulo: 'el', onomatopeya: '¡Cuac, cuac!', verbo: 'grazna',
+    color: '#bfe7ff', audio: 'sonidos/pato.mp3',
+    svg: lienzo(
+      '<rect x="82" y="158" width="8" height="24" rx="3" fill="#ff9a1f"/><path d="M70 190q16-14 32 0z" fill="#ff9a1f"/>' +
+      '<rect x="108" y="158" width="8" height="24" rx="3" fill="#ff9a1f"/><path d="M96 190q16-14 32 0z" fill="#ff9a1f"/>' +
+      '<path d="M40 112c-10-12-6-24 4-20 16 8 26 12 48 12 28 0 58 6 64 28 4 24-24 38-56 38-36 0-56-20-60-58z" fill="#fdfbf3"/>' +
+      '<path d="M70 126c20-14 54-10 64 8-14 16-46 18-62 6z" fill="#e6e0cf"/>' +
+      '<path d="M86 132q12 6 24 2" fill="none" stroke-width="3.5"/>' +
+      '<path d="M118 114c-2-14-2-20 0-26l30 2c0 8-2 16-2 26" fill="#fdfbf3"/>' +
+      '<circle cx="132" cy="70" r="28" fill="#fdfbf3"/>' +
+      '<path d="M128 44c-2-10 6-14 10-8" fill="none" stroke-width="4"/>' +
+      '<path d="M154 68c14-4 28 0 30 6-2 8-16 10-30 6z" fill="#ff9a1f"/>' +
+      '<path d="M158 75h22" fill="none" stroke-width="3"/>' +
+      '<circle cx="128" cy="80" r="6" fill="#ffb3c1" stroke="none"/>' +
+      ojo(140, 62, 8.5)
+    )
+  },
+  {
+    id: 'pollo', nombre: 'Pollo', articulo: 'el', onomatopeya: '¡Pío, pío!', verbo: 'pía',
+    color: '#ffd3e0', audio: 'sonidos/pollo.mp3',
+    svg: lienzo(
+      patita('M86 168v18m0 0l-9 6m9-6l1 8m-1-8l9 5') + patita('M114 168v18m0 0l-9 6m9-6l1 8m-1-8l9 5') +
+      '<path d="M94 72c-6-16 2-22 6-10 2-14 12-12 6 8" fill="#ffd93b"/>' +
+      '<ellipse cx="100" cy="120" rx="56" ry="54" fill="#ffd93b"/>' +
+      '<ellipse cx="48" cy="128" rx="11" ry="20" transform="rotate(25 48 128)" fill="#f5c400"/>' +
+      '<ellipse cx="152" cy="128" rx="11" ry="20" transform="rotate(-25 152 128)" fill="#f5c400"/>' +
+      '<circle cx="70" cy="128" r="8" fill="#ff9fae" stroke="none"/><circle cx="130" cy="128" r="8" fill="#ff9fae" stroke="none"/>' +
+      '<path d="M90 122h20l-10 14z" fill="#ff8c1a"/>' +
+      ojo(82, 106, 11) + ojo(118, 106, 11)
+    )
+  },
+  {
+    id: 'cerdo', nombre: 'Cerdo', articulo: 'el', onomatopeya: '¡Oinc, oinc!', verbo: 'gruñe',
+    color: '#c8f0dc', audio: 'sonidos/cerdo.mp3',
+    svg: lienzo(
+      '<rect x="58" y="158" width="18" height="28" rx="7" fill="#f59bb0"/><rect x="80" y="162" width="18" height="26" rx="7" fill="#f59bb0"/>' +
+      '<rect x="102" y="162" width="18" height="26" rx="7" fill="#f59bb0"/><rect x="124" y="158" width="18" height="28" rx="7" fill="#f59bb0"/>' +
+      '<path d="M156 146c10-4 16 4 10 8s-2 12 6 8" fill="none"/>' +
+      '<ellipse cx="100" cy="152" rx="58" ry="34" fill="#f9b4c4"/>' +
+      '<path class="oreja oreja-izq" style="transform-origin:80% 100%" d="M58 56L48 18l38 22z" fill="#f59bb0"/>' +
+      '<path class="oreja oreja-der" style="transform-origin:20% 100%" d="M142 56l10-38-38 22z" fill="#f59bb0"/>' +
+      '<circle cx="100" cy="90" r="50" fill="#f9b4c4"/>' +
+      '<circle cx="64" cy="104" r="8" fill="#ff8fa8" stroke="none"/><circle cx="136" cy="104" r="8" fill="#ff8fa8" stroke="none"/>' +
+      '<g class="hocico"><ellipse cx="100" cy="106" rx="24" ry="17" fill="#f48aa3"/>' +
+        '<ellipse cx="92" cy="106" rx="4" ry="7" fill="#a8435c" stroke="none"/><ellipse cx="108" cy="106" rx="4" ry="7" fill="#a8435c" stroke="none"/></g>' +
+      '<path d="M88 130q12 8 24 0" fill="none" stroke-width="4"/>' +
+      ojo(80, 78, 9) + ojo(120, 78, 9)
+    )
+  },
+  {
+    id: 'pavo', nombre: 'Pavo', articulo: 'el', onomatopeya: '¡Glu, glu, glu!', verbo: 'gluglutea',
+    color: '#e4d9ff', audio: 'sonidos/pavo.mp3',
+    svg: lienzo(
+      colaPavo() +
+      patita('M88 168v18m0 0l-9 6m9-6l1 8m-1-8l9 5') + patita('M112 168v18m0 0l-9 6m9-6l1 8m-1-8l9 5') +
+      '<ellipse cx="100" cy="136" rx="40" ry="40" fill="#7a4a2a"/>' +
+      '<path d="M78 130q5 7 11 0 5 7 11 0 5 7 11 0 5 7 11 0M84 148q5 7 11 0 5 7 11 0 5 7 11 0" fill="none" stroke="#c99a2e" stroke-width="3.5"/>' +
+      '<g class="cabeza" style="transform-origin:50% 100%">' +
+        '<path d="M90 110c0-10 2-16 4-20h12c2 4 4 10 4 20" fill="#a9d6ec"/>' +
+        '<circle cx="100" cy="80" r="24" fill="#a9d6ec"/>' +
+        '<path d="M92 88h16l-8 10z" fill="#ffc22e"/>' +
+        '<path d="M101 84c-6 6-6 18-12 22 10 2 16-8 14-20z" fill="#e23b3b"/>' +
+        '<path d="M104 98c-8 6-4 18 4 16 6-2 6-10 0-16z" fill="#e23b3b"/>' +
+        ojo(91, 76, 7.5) + ojo(110, 76, 7.5) +
+      '</g>'
+    )
+  }
+];
+
+/* =========================================================
+   3. PREFERENCIAS (se guardan en el navegador)
+   ========================================================= */
+var CLAVE_PREFS = 'granja-sonidos-prefs-v1';
+var prefs = { voz: true, volumen: 0.8, mostrarTexto: true, excluidos: [] };
+
+function cargarPrefs() {
+  try {
+    var g = JSON.parse(localStorage.getItem(CLAVE_PREFS) || 'null');
+    if (g && typeof g === 'object') {
+      if (typeof g.voz === 'boolean') prefs.voz = g.voz;
+      if (typeof g.volumen === 'number' && g.volumen >= 0 && g.volumen <= 1) prefs.volumen = g.volumen;
+      if (typeof g.mostrarTexto === 'boolean') prefs.mostrarTexto = g.mostrarTexto;
+      if (Array.isArray(g.excluidos)) prefs.excluidos = g.excluidos.filter(function (id) { return !!porId(id); });
+    }
+  } catch (e) { /* sin almacenamiento: se usan los valores por defecto */ }
+  if (animalesDelJuego().length === 0) prefs.excluidos = [];
+}
+function guardarPrefs() {
+  try { localStorage.setItem(CLAVE_PREFS, JSON.stringify(prefs)); } catch (e) { /* modo privado o bloqueado */ }
+}
+function animalesDelJuego() {
+  return ANIMALES.filter(function (a) { return prefs.excluidos.indexOf(a.id) === -1; });
+}
+function aplicarPrefs() {
+  document.body.classList.toggle('sin-texto', !prefs.mostrarTexto);
+  document.body.classList.toggle('sin-voz', !prefs.voz || !Voz.disponible);
+  Sonido.volumen(prefs.volumen);
+}
+
+/* =========================================================
+   4. AUDIO: archivos, sonidos sintetizados y voz
+   ========================================================= */
+var Voz = {
+  disponible: 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function',
+  voz: null,
+  ultima: null,
+  elegir: function () {
+    if (!this.disponible) return;
+    var voces = window.speechSynthesis.getVoices() || [];
+    var preferidas = ['es-pe', 'es-mx', 'es-us', 'es-419', 'es-es'];
+    var norm = function (v) { return (v.lang || '').replace('_', '-').toLowerCase(); };
+    for (var i = 0; i < preferidas.length; i++) {
+      for (var j = 0; j < voces.length; j++) {
+        if (norm(voces[j]) === preferidas[i]) { this.voz = voces[j]; return; }
+      }
+    }
+    for (var k = 0; k < voces.length; k++) {
+      if (norm(voces[k]).indexOf('es') === 0) { this.voz = voces[k]; return; }
+    }
+  },
+  hablar: function (texto) {
+    if (!this.disponible || !prefs.voz || prefs.volumen === 0) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(texto);
+      u.lang = this.voz ? this.voz.lang : 'es-ES';
+      if (this.voz) u.voice = this.voz;
+      u.rate = 0.85;
+      u.pitch = 1.1;
+      u.volume = prefs.volumen;
+      this.ultima = u; // evita que el navegador la descarte antes de terminar
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* sin voz */ }
+  },
+  callar: function () {
+    if (this.disponible) { try { window.speechSynthesis.cancel(); } catch (e) { /* nada */ } }
+  }
+};
+
+// Recetas de sonido sintetizado: cada una devuelve su duración en segundos
+var SINTESIS = {
+  vaca: function (s, bus, t) {
+    s.tono(bus, { t: t, dur: 1.5, tipo: 'sawtooth', vol: 0.36, ataque: 0.15, caida: 0.35,
+      frecs: [[0, 150], [0.3, 165], [1.5, 100]],
+      filtro: { tipo: 'lowpass', q: 6, frecs: [[0, 350], [0.35, 1000], [1.5, 300]] },
+      vibrato: { f: 5, prof: 3 } });
+    s.tono(bus, { t: t, dur: 1.5, tipo: 'square', vol: 0.12, ataque: 0.15, caida: 0.35,
+      frecs: [[0, 75], [0.3, 82], [1.5, 50]], filtro: { tipo: 'lowpass', f: 400, q: 1 } });
+    return 1.55;
+  },
+  caballo: function (s, bus, t) {
+    s.tono(bus, { t: t, dur: 1.4, tipo: 'sawtooth', vol: 0.38, ataque: 0.06, caida: 0.3,
+      frecs: [[0, 520], [0.18, 1250], [0.7, 1000], [1.4, 420]],
+      filtro: { tipo: 'bandpass', f: 1400, q: 1.2 }, vibrato: { f: 15, prof: 130 } });
+    s.ruido(bus, { t: t + 1.45, dur: 0.35, vol: 0.4, filtro: { tipo: 'bandpass', f: 700, q: 0.8 } });
+    return 1.8;
+  },
+  carnero: function (s, bus, t) {
+    s.tono(bus, { t: t, dur: 1.1, tipo: 'sawtooth', vol: 0.62, ataque: 0.05, caida: 0.25,
+      frecs: [[0, 330], [0.2, 340], [1.1, 290]], filtro: { tipo: 'bandpass', f: 1100, q: 2.5 },
+      vibrato: { f: 8, prof: 10 }, am: { f: 9, prof: 0.7 } });
+    s.tono(bus, { t: t, dur: 1.1, tipo: 'triangle', vol: 0.12, ataque: 0.05, caida: 0.25,
+      frecs: [[0, 660], [1.1, 580]], am: { f: 9, prof: 0.7 } });
+    return 1.15;
+  },
+  gallina: function (s, bus, t) {
+    [0, 0.2, 0.38, 0.62].forEach(function (d) {
+      s.tono(bus, { t: t + d, dur: 0.1, tipo: 'square', vol: 0.42, ataque: 0.005, caida: 0.05,
+        frecs: [[0, 760], [0.1, 430]], filtro: { tipo: 'bandpass', f: 1000, q: 3 } });
+    });
+    s.tono(bus, { t: t + 0.9, dur: 0.55, tipo: 'square', vol: 0.4, ataque: 0.02, caida: 0.2,
+      frecs: [[0, 520], [0.15, 880], [0.55, 640]], filtro: { tipo: 'bandpass', f: 1200, q: 2 },
+      vibrato: { f: 22, prof: 40 } });
+    return 1.5;
+  },
+  pato: function (s, bus, t) {
+    [0, 0.38].forEach(function (d) {
+      s.tono(bus, { t: t + d, dur: 0.27, tipo: 'square', vol: 0.95, ataque: 0.01, caida: 0.1,
+        frecs: [[0, 320], [0.06, 350], [0.27, 230]], filtro: { tipo: 'bandpass', f: 1150, q: 5 },
+        am: { f: 45, prof: 0.6 } });
+    });
+    return 0.7;
+  },
+  pollo: function (s, bus, t) {
+    [0, 0.17, 0.34, 0.7, 0.87].forEach(function (d) {
+      s.tono(bus, { t: t + d, dur: 0.11, tipo: 'sine', vol: 0.35, ataque: 0.005, caida: 0.04,
+        frecs: [[0, 2700], [0.035, 3700], [0.11, 2900]] });
+    });
+    return 1.0;
+  },
+  cerdo: function (s, bus, t) {
+    [0, 0.42].forEach(function (d) {
+      s.tono(bus, { t: t + d, dur: 0.3, tipo: 'sawtooth', vol: 0.55, ataque: 0.02, caida: 0.12,
+        frecs: [[0, 170], [0.08, 230], [0.3, 120]], filtro: { tipo: 'lowpass', f: 900, q: 6 },
+        am: { f: 30, prof: 0.8 } });
+      s.ruido(bus, { t: t + d, dur: 0.25, vol: 0.2, filtro: { tipo: 'lowpass', f: 600, q: 1 } });
+    });
+    return 0.75;
+  },
+  pavo: function (s, bus, t) {
+    [0, 0.3, 0.6].forEach(function (d) {
+      s.tono(bus, { t: t + d, dur: 0.26, tipo: 'sawtooth', vol: 0.52, ataque: 0.01, caida: 0.08,
+        frecs: [[0, 620], [0.26, 430]], filtro: { tipo: 'bandpass', f: 1300, q: 2 },
+        vibrato: { f: 24, prof: 180, tipo: 'square' } });
+    });
+    return 0.9;
+  },
+  // Para animales nuevos sin receta propia
+  generico: function (s, bus, t) {
+    s.tono(bus, { t: t, dur: 0.45, tipo: 'triangle', vol: 0.4, frecs: [[0, 400], [0.45, 600]] });
+    return 0.5;
+  }
+};
+
+var Sonido = {
+  ctx: null, maestro: null, bus: null, nodos: [], archivos: {}, estado: {},
+  actual: null, turno: 0, espera: null,
+
+  // Se llama en el primer toque: los navegadores exigen un gesto para activar el audio
+  iniciar: function () {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!this.ctx && AC) {
+      try {
+        this.ctx = new AC();
+        this.maestro = this.ctx.createGain();
+        this.maestro.gain.value = prefs.volumen;
+        this.maestro.connect(this.ctx.destination);
+      } catch (e) { this.ctx = null; }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      var r = this.ctx.resume();
+      if (r && r.catch) r.catch(function () {});
+    }
+  },
+
+  // Intenta cargar sonidos/<id>.mp3; si no existe, se usará el sintetizado
+  precargar: function () {
+    var self = this;
+    ANIMALES.forEach(function (a) {
+      if (!a.audio || typeof window.Audio !== 'function') { self.estado[a.id] = 'no'; return; }
+      var el = new window.Audio();
+      el.preload = 'auto';
+      self.estado[a.id] = 'cargando';
+      var listo = function () { self.estado[a.id] = 'ok'; Panel.estadoAudio(); };
+      el.addEventListener('canplaythrough', listo, { once: true });
+      el.addEventListener('loadeddata', listo, { once: true });
+      el.addEventListener('error', function () { self.estado[a.id] = 'no'; Panel.estadoAudio(); }, { once: true });
+      el.src = a.audio;
+      self.archivos[a.id] = el;
+    });
+  },
+
+  volumen: function (v) {
+    if (this.maestro) this.maestro.gain.value = v;
+    var arch = this.archivos;
+    Object.keys(arch).forEach(function (k) { arch[k].volume = v; });
+  },
+
+  // Detiene todo lo que suena (solo un sonido a la vez)
+  detener: function () {
+    this.turno++;
+    clearTimeout(this.espera);
+    if (this.actual) {
+      this.actual.pause();
+      try { this.actual.currentTime = 0; } catch (e) { /* nada */ }
+      this.actual = null;
+    }
+    this.nodos.forEach(function (n) { try { n.stop(); } catch (e) { /* ya detenido */ } });
+    this.nodos = [];
+    if (this.bus) { try { this.bus.disconnect(); } catch (e) { /* nada */ } this.bus = null; }
+    Voz.callar();
+  },
+
+  // Ejecuta algo después de un tiempo, salvo que otro sonido lo haya interrumpido
+  luego: function (ms, fn) {
+    var turno = this.turno, self = this;
+    clearTimeout(this.espera);
+    this.espera = setTimeout(function () { if (turno === self.turno) fn(); }, ms);
+  },
+
+  reproducirAnimal: function (animal) {
+    var self = this;
+    this.detener();
+    this.iniciar();
+    var turno = this.turno;
+    var el = this.archivos[animal.id];
+    if (el && this.estado[animal.id] !== 'no') {
+      try { el.currentTime = 0; } catch (e) { /* nada */ }
+      el.volume = prefs.volumen;
+      this.actual = el;
+      var p;
+      try { p = el.play(); } catch (e) { p = Promise.reject(e); }
+      if (p && p.then) {
+        p.then(function () {
+          self.estado[animal.id] = 'ok';
+          if (turno !== self.turno) el.pause();
+        }).catch(function (err) {
+          if (err && err.name === 'NotSupportedError') self.estado[animal.id] = 'no';
+          if (turno === self.turno) { self.actual = null; self.respaldo(animal); }
+        });
+      }
+      return;
+    }
+    this.respaldo(animal);
+  },
+
+  // Sonido sintetizado + la voz lee la onomatopeya
+  respaldo: function (animal) {
+    var dur = this.sintetizar(SINTESIS[animal.id] || SINTESIS.generico);
+    this.luego(Math.round(dur * 1000) + 150, function () { Voz.hablar(animal.onomatopeya); });
+  },
+
+  sintetizar: function (receta) {
+    this.iniciar();
+    if (!this.ctx) return 0;
+    this.bus = this.ctx.createGain();
+    this.bus.connect(this.maestro);
+    return receta(this, this.bus, this.ctx.currentTime + 0.03);
+  },
+
+  // Oscilador con envolvente, filtro, vibrato y trémolo opcionales
+  tono: function (bus, o) {
+    var c = this.ctx, t0 = o.t, t1 = o.t + o.dur, i;
+    var osc = c.createOscillator();
+    osc.type = o.tipo || 'sine';
+    osc.frequency.setValueAtTime(o.frecs[0][1], t0);
+    for (i = 1; i < o.frecs.length; i++) osc.frequency.linearRampToValueAtTime(o.frecs[i][1], t0 + o.frecs[i][0]);
+
+    var env = c.createGain();
+    var vol = o.vol == null ? 0.4 : o.vol, at = o.ataque == null ? 0.02 : o.ataque, ca = o.caida == null ? 0.08 : o.caida;
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.linearRampToValueAtTime(vol, t0 + at);
+    env.gain.setValueAtTime(vol, Math.max(t0 + at, t1 - ca));
+    env.gain.linearRampToValueAtTime(0.0001, t1);
+
+    var salida = osc;
+    if (o.filtro) {
+      var fl = c.createBiquadFilter();
+      fl.type = o.filtro.tipo;
+      fl.Q.value = o.filtro.q == null ? 1 : o.filtro.q;
+      if (o.filtro.frecs) {
+        fl.frequency.setValueAtTime(o.filtro.frecs[0][1], t0);
+        for (i = 1; i < o.filtro.frecs.length; i++) fl.frequency.linearRampToValueAtTime(o.filtro.frecs[i][1], t0 + o.filtro.frecs[i][0]);
+      } else {
+        fl.frequency.value = o.filtro.f;
+      }
+      salida.connect(fl);
+      salida = fl;
+    }
+    if (o.vibrato) {
+      var lfo = c.createOscillator(), prof = c.createGain();
+      lfo.type = o.vibrato.tipo || 'sine';
+      lfo.frequency.value = o.vibrato.f;
+      prof.gain.value = o.vibrato.prof;
+      lfo.connect(prof);
+      prof.connect(osc.frequency);
+      lfo.start(t0); lfo.stop(t1 + 0.05);
+      this.nodos.push(lfo);
+    }
+    if (o.am) {
+      var trem = c.createGain(), lfo2 = c.createOscillator(), prof2 = c.createGain();
+      trem.gain.value = 1 - o.am.prof / 2;
+      lfo2.frequency.value = o.am.f;
+      prof2.gain.value = o.am.prof / 2;
+      lfo2.connect(prof2);
+      prof2.connect(trem.gain);
+      salida.connect(trem);
+      salida = trem;
+      lfo2.start(t0); lfo2.stop(t1 + 0.05);
+      this.nodos.push(lfo2);
+    }
+    salida.connect(env);
+    env.connect(bus);
+    osc.start(t0);
+    osc.stop(t1 + 0.05);
+    this.nodos.push(osc);
+  },
+
+  // Ruido filtrado (resoplidos)
+  ruido: function (bus, o) {
+    var c = this.ctx, n = Math.ceil(c.sampleRate * o.dur);
+    var buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var src = c.createBufferSource();
+    src.buffer = buf;
+    var fl = c.createBiquadFilter();
+    fl.type = o.filtro.tipo; fl.frequency.value = o.filtro.f; fl.Q.value = o.filtro.q;
+    var env = c.createGain();
+    env.gain.setValueAtTime(0.0001, o.t);
+    env.gain.linearRampToValueAtTime(o.vol, o.t + 0.03);
+    env.gain.linearRampToValueAtTime(0.0001, o.t + o.dur);
+    src.connect(fl); fl.connect(env); env.connect(bus);
+    src.start(o.t); src.stop(o.t + o.dur + 0.02);
+    this.nodos.push(src);
+  },
+
+  // Sonido alegre de acierto
+  alegre: function () {
+    this.detener();
+    return this.sintetizar(function (s, bus, t) {
+      [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) {
+        s.tono(bus, { t: t + i * 0.11, dur: 0.22, tipo: 'triangle', vol: 0.35, ataque: 0.01, caida: 0.12, frecs: [[0, f], [0.22, f]] });
+      });
+      [1046.5, 1318.5, 1568].forEach(function (f) {
+        s.tono(bus, { t: t + 0.46, dur: 0.5, tipo: 'triangle', vol: 0.16, ataque: 0.01, caida: 0.35, frecs: [[0, f], [0.5, f]] });
+      });
+      return 1.0;
+    });
+  },
+
+  // Intento fallido: sonido muy suave, nunca un castigo
+  suave: function () {
+    this.detener();
+    return this.sintetizar(function (s, bus, t) {
+      s.tono(bus, { t: t, dur: 0.25, tipo: 'sine', vol: 0.12, ataque: 0.02, caida: 0.15, frecs: [[0, 392], [0.25, 330]] });
+      return 0.3;
+    });
+  }
+};
+
+/* =========================================================
+   5. CONFETI (canvas)
+   ========================================================= */
+var Confeti = {
+  partes: [], raf: 0, ctx: null, ultimo: 0, ancho: 0, alto: 0,
+  ajustar: function () {
+    var cv = $('#confeti'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.ancho = window.innerWidth; this.alto = window.innerHeight;
+    cv.width = Math.round(this.ancho * dpr); cv.height = Math.round(this.alto * dpr);
+    this.ctx = cv.getContext('2d');
+    if (this.ctx) this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  },
+  lanzar: function () {
+    if (reducirMovimiento()) return;
+    this.ajustar();
+    if (!this.ctx) return;
+    var colores = ['#ff5a5f', '#ffd23f', '#3ec46d', '#3fa7ff', '#ff8c42', '#b67cff', '#ff7eb6'];
+    var W = this.ancho, H = this.alto, fuerza = Math.max(1, Math.min(W, H) / 500);
+    var cantidad = Math.max(70, Math.min(170, Math.round(W * H / 12000)));
+    for (var i = 0; i < cantidad; i++) {
+      var izq = i % 2 === 0;
+      this.partes.push({
+        x: izq ? -10 : W + 10, y: H * 0.8,
+        vx: (izq ? 1 : -1) * (3 + Math.random() * 9) * fuerza,
+        vy: -(9 + Math.random() * 11) * fuerza,
+        rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+        w: 8 + Math.random() * 8, h: 5 + Math.random() * 6,
+        color: colores[i % colores.length], circulo: Math.random() < 0.3,
+        fase: Math.random() * 6
+      });
+    }
+    if (!this.raf) {
+      this.ultimo = performance.now();
+      this.raf = requestAnimationFrame(this.paso);
+    }
+  },
+  paso: function (ahora) {
+    var self = Confeti, k = Math.min(3, (ahora - self.ultimo) / 16.67), c = self.ctx;
+    self.ultimo = ahora;
+    c.clearRect(0, 0, self.ancho, self.alto);
+    self.partes = self.partes.filter(function (p) {
+      p.vx *= Math.pow(0.985, k);
+      p.vy += 0.3 * k;
+      p.x += (p.vx + Math.sin(p.fase += 0.1 * k)) * k;
+      p.y += p.vy * k;
+      p.rot += p.vr * k;
+      c.save();
+      c.translate(p.x, p.y);
+      c.rotate(p.rot);
+      c.fillStyle = p.color;
+      if (p.circulo) { c.beginPath(); c.arc(0, 0, p.h * 0.7, 0, Math.PI * 2); c.fill(); }
+      else c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      c.restore();
+      return p.y < self.alto + 30;
+    });
+    if (self.partes.length) self.raf = requestAnimationFrame(self.paso);
+    else { self.raf = 0; c.clearRect(0, 0, self.ancho, self.alto); }
+  }
+};
+
+/* =========================================================
+   6. RENDER Y MODO 1: EXPLORAR
+   ========================================================= */
+var Explorar = {
+  temporizador: null,
+  render: function () {
+    var cont = $('#cuadricula');
+    cont.innerHTML = ANIMALES.map(function (a, i) {
+      var f = frase(a);
+      return '<div class="tarjeta" data-id="' + a.id + '" style="--color:' + a.color + ';--retraso:' + ((i * 1.3) % 5).toFixed(1) + 's">' +
+        '<button type="button" class="tarjeta-btn" aria-label="' + a.nombre + '. Toca para escuchar cómo ' + a.verbo + '.">' +
+          '<span class="ilustracion" data-animal="' + a.id + '">' + a.svg +
+            '<span class="globo" aria-hidden="true">' + a.onomatopeya + '</span></span>' +
+        '</button>' +
+        '<div class="tarjeta-pie">' +
+          '<span class="nombre texto-opcional" aria-hidden="true">' + a.nombre + '</span>' +
+          '<span class="frase-fila"><span class="frase texto-opcional">' + f + '</span>' +
+            '<button type="button" class="btn-voz" aria-label="Escuchar la frase: ' + f + '">' + ICONO.parlante + '</button></span>' +
+        '</div></div>';
+    }).join('');
+
+    cont.addEventListener('click', function (e) {
+      var tarjeta = e.target.closest('.tarjeta');
+      if (!tarjeta) return;
+      var a = porId(tarjeta.dataset.id);
+      if (e.target.closest('.btn-voz')) {
+        Sonido.detener();
+        Voz.hablar(frase(a));
+        return;
+      }
+      Explorar.activar(tarjeta, a);
+    });
+  },
+  activar: function (tarjeta, a) {
+    $$('.tarjeta', $('#cuadricula')).forEach(function (t) {
+      if (t !== tarjeta) t.classList.remove('activa', 'animando');
+    });
+    tarjeta.classList.add('activa');
+    reiniciarAnimacion(tarjeta, 'animando');
+    clearTimeout(this.temporizador);
+    this.temporizador = setTimeout(function () { tarjeta.classList.remove('animando'); }, 1800);
+    Sonido.reproducirAnimal(a);
+    anunciar(frase(a) + ': ' + a.onomatopeya);
+  },
+  limpiar: function () {
+    $$('.tarjeta', $('#cuadricula')).forEach(function (t) { t.classList.remove('activa', 'animando'); });
+  }
+};
+
+/* =========================================================
+   7. MODOS 2 Y 3: JUEGOS
+   ========================================================= */
+var Juego = {
+  tipo: null, rondas: [], indice: 0, resultados: [], fallos: 0, resuelta: false, auto: null,
+
+  iniciar: function (tipo) {
+    this.tipo = tipo;
+    this.rondas = mezclar(animalesDelJuego());
+    this.indice = 0;
+    this.resultados = [];
+    mostrarModo('juego', tipo);
+    $('#juego-titulo').textContent = tipo === 'quien' ? '¿Quién hace este sonido?' : '¿Qué animal es?';
+    this.ronda();
+  },
+
+  ronda: function () {
+    Sonido.detener();
+    clearTimeout(this.auto);
+    this.fallos = 0;
+    this.resuelta = false;
+    var correcto = this.rondas[this.indice];
+    this.pintarProgreso($('#progreso'), true);
+    $('#ronda-texto').textContent = 'Ronda ' + (this.indice + 1) + ' de ' + this.rondas.length;
+    mensaje('', '');
+    $('#btn-siguiente').hidden = true;
+    if (this.tipo === 'quien') this.pintarQuien(correcto);
+    else this.pintarCual(correcto);
+  },
+
+  // Distractores: primero de los animales elegidos, si faltan se completan con el resto
+  distractores: function (correcto, n) {
+    var base = mezclar(animalesDelJuego().filter(function (a) { return a.id !== correcto.id; }));
+    var elegidos = base.slice(0, n);
+    if (elegidos.length < n) {
+      var resto = mezclar(ANIMALES.filter(function (a) { return a.id !== correcto.id && elegidos.indexOf(a) === -1; }));
+      elegidos = elegidos.concat(resto.slice(0, n - elegidos.length));
+    }
+    return elegidos;
+  },
+
+  pintarQuien: function (correcto) {
+    var self = this;
+    var opciones = mezclar([correcto].concat(this.distractores(correcto, 3)));
+    var cuerpo = $('#juego-cuerpo');
+    cuerpo.innerHTML =
+      '<div style="display:flex;justify-content:center;margin-bottom:clamp(12px,2vh,22px)">' +
+        '<button type="button" class="btn-escuchar" id="btn-escuchar">' + ICONO.play + '<span>Escuchar</span></button></div>' +
+      '<div class="opciones opciones-' + opciones.length + '" role="group" aria-label="Elige el animal">' +
+      opciones.map(function (a) {
+        return '<button type="button" class="opcion" data-id="' + a.id + '" style="--color:' + a.color + '" aria-label="' + a.nombre + '">' +
+          '<span class="ilustracion" data-animal="' + a.id + '">' + a.svg + '</span>' +
+          '<span class="nombre texto-opcional" aria-hidden="true">' + a.nombre + '</span></button>';
+      }).join('') + '</div>';
+
+    $('#btn-escuchar').addEventListener('click', function () { Sonido.reproducirAnimal(correcto); });
+    $$('.opcion', cuerpo).forEach(function (b) {
+      b.addEventListener('click', function () { self.elegir(b.dataset.id, b); });
+    });
+    // El sonido de la ronda suena solo al empezar
+    this.auto = setTimeout(function () { Sonido.reproducirAnimal(correcto); }, 600);
+  },
+
+  pintarCual: function (correcto) {
+    var self = this;
+    var opciones = mezclar([correcto].concat(this.distractores(correcto, 2)));
+    var cuerpo = $('#juego-cuerpo');
+    cuerpo.innerHTML =
+      '<div class="inverso">' +
+        '<div class="animal-grande" id="animal-grande" style="--color:' + correcto.color + '">' +
+          '<p class="pregunta">¿Cómo hace este animal?</p>' +
+          '<span class="ilustracion" data-animal="' + correcto.id + '">' + correcto.svg + '</span>' +
+          '<span class="nombre texto-opcional">' + correcto.nombre + '</span></div>' +
+        '<div class="opciones-onoma" role="group" aria-label="Elige el sonido">' +
+        opciones.map(function (a) {
+          return '<div class="fila-onoma">' +
+            '<button type="button" class="btn-onoma" data-id="' + a.id + '">' + a.onomatopeya + '</button>' +
+            '<button type="button" class="btn-oir" data-texto="' + a.onomatopeya + '" aria-label="Escuchar ' + a.onomatopeya + '">' + ICONO.parlante + '</button></div>';
+        }).join('') + '</div></div>';
+
+    $$('.btn-onoma', cuerpo).forEach(function (b) {
+      b.addEventListener('click', function () { self.elegir(b.dataset.id, b); });
+    });
+    $$('.btn-oir', cuerpo).forEach(function (b) {
+      b.addEventListener('click', function () { Sonido.detener(); Voz.hablar(b.dataset.texto); });
+    });
+  },
+
+  elegir: function (id, boton) {
+    if (this.resuelta || boton.disabled) return;
+    var correcto = this.rondas[this.indice];
+    var cuerpo = $('#juego-cuerpo');
+    clearTimeout(this.auto);
+
+    if (id === correcto.id) {
+      this.resuelta = true;
+      this.resultados[this.indice] = this.fallos === 0 ? 'oro' : 'plata';
+      boton.classList.add('correcta');
+      $$('.opcion, .btn-onoma', cuerpo).forEach(function (b) {
+        if (b !== boton && !b.disabled) { b.disabled = true; b.classList.add('apagada'); }
+      });
+      // El animal correcto hace su animación
+      var animado = this.tipo === 'quien' ? boton : $('#animal-grande');
+      reiniciarAnimacion(animado, 'animando');
+      setTimeout(function () { animado.classList.remove('animando'); }, 1800);
+
+      this.pintarProgreso($('#progreso'), false);
+      Confeti.lanzar();
+      var texto = '¡Muy bien! ' + frase(correcto) + '.';
+      if (this.tipo === 'cual') texto = '¡Muy bien! ' + frase(correcto) + ': ' + correcto.onomatopeya;
+      mensaje(texto, 'exito');
+      var dur = Sonido.alegre();
+      if (this.tipo === 'quien') {
+        Sonido.luego(dur * 1000, function () { Voz.hablar('¡Muy bien! ' + frase(correcto)); });
+      } else {
+        Sonido.luego(dur * 1000, function () { Sonido.reproducirAnimal(correcto); });
+      }
+      var sig = $('#btn-siguiente');
+      sig.textContent = this.indice === this.rondas.length - 1 ? '¡Ver mis estrellas!' : '¡Siguiente!';
+      sig.hidden = false;
+      try { sig.focus({ preventScroll: true }); } catch (e) { sig.focus(); }
+      // En pantallas pequeñas, que se vea el mensaje y el botón
+      setTimeout(function () {
+        var r = sig.getBoundingClientRect();
+        if (r.bottom > window.innerHeight) sig.scrollIntoView({ block: 'end', behavior: reducirMovimiento() ? 'auto' : 'smooth' });
+      }, 300);
+    } else {
+      this.fallos++;
+      var teniaFoco = document.activeElement === boton;
+      boton.disabled = true;
+      boton.classList.add('incorrecta');
+      reiniciarAnimacion(boton, 'temblar');
+      mensaje('¡Inténtalo otra vez!', 'animo');
+      Sonido.suave();
+      Sonido.luego(350, function () { Voz.hablar('¡Inténtalo otra vez!'); });
+      // Si se usaba el teclado, el foco pasa a la siguiente opción disponible
+      if (teniaFoco) {
+        var libre = $$('.opcion, .btn-onoma', cuerpo).filter(function (b) { return !b.disabled; })[0];
+        if (libre) libre.focus();
+      }
+    }
+  },
+
+  siguiente: function () {
+    this.indice++;
+    if (this.indice >= this.rondas.length) this.terminar();
+    else this.ronda();
+  },
+
+  terminar: function () {
+    var n = this.rondas.length;
+    var oro = this.resultados.filter(function (r) { return r === 'oro'; }).length;
+    mostrarModo('logro', this.tipo);
+    $('#trofeo').innerHTML = ICONO.estrella;
+    this.pintarProgreso($('#logro-estrellas'), false);
+    $('#logro-estrellas').setAttribute('aria-label', 'Estrellas ganadas: ' + oro + ' de ' + n);
+    var texto, animo;
+    if (oro === 0) texto = '¡Llegaste hasta el final!';
+    else texto = 'Ganaste ' + oro + (oro === 1 ? ' estrella' : ' estrellas') + ' de ' + n + '.';
+    if (oro === n) animo = '¡Perfecto! Conoces a todos los animales de la granja.';
+    else if (oro >= n / 2) animo = '¡Muy bien! Eres un gran amigo de la granja.';
+    else animo = '¡Buen trabajo! Si sigues practicando, ganarás más estrellas.';
+    $('#logro-texto').textContent = texto;
+    $('#logro-animo').textContent = animo;
+    Confeti.lanzar();
+    var dur = Sonido.alegre();
+    Sonido.luego(dur * 1000, function () { Voz.hablar('¡Lo lograste! ' + texto); });
+    $('#btn-otra-vez').focus();
+  },
+
+  // Estrellas: dorada = a la primera, clara = con otro intento
+  pintarProgreso: function (lista, marcarActual) {
+    var self = this;
+    lista.innerHTML = this.rondas.map(function (a, i) {
+      var clase = self.resultados[i] || (marcarActual && i === self.indice ? 'actual' : '');
+      return '<li class="' + clase + '">' + ICONO.estrella + '</li>';
+    }).join('');
+    if (marcarActual) lista.setAttribute('aria-label', 'Ronda ' + (this.indice + 1) + ' de ' + this.rondas.length);
+  },
+
+  salir: function () {
+    clearTimeout(this.auto);
+  }
+};
+
+function mensaje(texto, clase) {
+  var m = $('#mensaje');
+  m.className = 'mensaje' + (clase ? ' ' + clase : '');
+  m.textContent = texto;
+}
+
+// Cambia la pantalla visible
+function mostrarModo(modo, tipoJuego) {
+  Sonido.detener();
+  Juego.salir();
+  Explorar.limpiar();
+  $('#modo-explorar').hidden = modo !== 'explorar';
+  $('#modo-juego').hidden = modo !== 'juego';
+  $('#modo-logro').hidden = modo !== 'logro';
+  var activo = modo === 'explorar' ? 'explorar' : tipoJuego;
+  $$('.btn-modo').forEach(function (b) {
+    if (b.dataset.modo === activo) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   8. PANEL DOCENTE
+   ========================================================= */
+var Panel = {
+  ultimoFoco: null,
+  render: function () {
+    $('#btn-panel').innerHTML = ICONO.engranaje;
+    $('#lista-animales').innerHTML = ANIMALES.map(function (a) {
+      return '<label><input type="checkbox" value="' + a.id + '">' +
+        '<span class="mini" style="--color:' + a.color + '">' + a.svg + '</span>' + a.nombre + '</label>';
+    }).join('');
+    if (!Voz.disponible) { $('#pref-voz').disabled = true; $('#nota-voz').hidden = false; }
+    if (!pantallaCompletaDisponible()) $('#btn-pantalla').hidden = true;
+    this.sincronizar();
+    this.eventos();
+  },
+  sincronizar: function () {
+    $('#pref-voz').checked = prefs.voz && Voz.disponible;
+    $('#pref-volumen').value = Math.round(prefs.volumen * 100);
+    $('#volumen-valor').textContent = '(' + Math.round(prefs.volumen * 100) + '%)';
+    $('#pref-texto').checked = prefs.mostrarTexto;
+    $$('#lista-animales input').forEach(function (c) { c.checked = prefs.excluidos.indexOf(c.value) === -1; });
+  },
+  eventos: function () {
+    var self = this;
+    $('#btn-panel').addEventListener('click', function () { self.abrir(); });
+    $('#btn-cerrar-panel').addEventListener('click', function () { self.cerrar(); });
+    $('#panel-fondo').addEventListener('click', function (e) { if (e.target === this) self.cerrar(); });
+    $('#pref-voz').addEventListener('change', function () {
+      prefs.voz = this.checked;
+      if (!prefs.voz) Voz.callar();
+      guardarPrefs(); aplicarPrefs();
+    });
+    $('#pref-volumen').addEventListener('input', function () {
+      prefs.volumen = Number(this.value) / 100;
+      $('#volumen-valor').textContent = '(' + this.value + '%)';
+      aplicarPrefs();
+    });
+    $('#pref-volumen').addEventListener('change', guardarPrefs);
+    $('#pref-texto').addEventListener('change', function () {
+      prefs.mostrarTexto = this.checked;
+      guardarPrefs(); aplicarPrefs();
+    });
+    $('#lista-animales').addEventListener('change', function (e) {
+      var c = e.target;
+      if (!c.matches('input')) return;
+      if (!c.checked && animalesDelJuego().length <= 1) {
+        c.checked = true;
+        $('#nota-animales').hidden = false;
+        return;
+      }
+      $('#nota-animales').hidden = true;
+      prefs.excluidos = $$('#lista-animales input').filter(function (x) { return !x.checked; }).map(function (x) { return x.value; });
+      guardarPrefs();
+    });
+    $('#btn-todos').addEventListener('click', function () {
+      prefs.excluidos = [];
+      $('#nota-animales').hidden = true;
+      self.sincronizar(); guardarPrefs();
+    });
+    $('#btn-pantalla').addEventListener('click', alternarPantallaCompleta);
+    document.addEventListener('fullscreenchange', actualizarBotonPantalla);
+    document.addEventListener('webkitfullscreenchange', actualizarBotonPantalla);
+    // Escape cierra y Tab no sale del panel
+    $('#panel-fondo').addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); self.cerrar(); return; }
+      if (e.key !== 'Tab') return;
+      var focos = $$('button, input', $('#panel')).filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+      var primero = focos[0], ultimo = focos[focos.length - 1];
+      if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+    });
+  },
+  abrir: function () {
+    this.ultimoFoco = document.activeElement;
+    this.sincronizar();
+    this.estadoAudio();
+    $('#panel-fondo').hidden = false;
+    $('#btn-panel').setAttribute('aria-expanded', 'true');
+    $('#pref-voz').disabled ? $('#pref-volumen').focus() : $('#pref-voz').focus();
+  },
+  cerrar: function () {
+    $('#panel-fondo').hidden = true;
+    $('#btn-panel').setAttribute('aria-expanded', 'false');
+    if (this.ultimoFoco && this.ultimoFoco.focus) this.ultimoFoco.focus();
+  },
+  // Informa cuántos audios reales se encontraron en la carpeta sonidos/
+  estadoAudio: function () {
+    var el = $('#estado-audio');
+    if (!el) return;
+    var ok = ANIMALES.filter(function (a) { return Sonido.estado[a.id] === 'ok'; }).length;
+    var cargando = ANIMALES.some(function (a) { return Sonido.estado[a.id] === 'cargando'; });
+    if (ok === ANIMALES.length) el.textContent = 'Sonidos reales: se usan los ' + ok + ' archivos de la carpeta «sonidos».';
+    else if (ok > 0) el.textContent = 'Sonidos reales encontrados: ' + ok + ' de ' + ANIMALES.length + '. Los demás se crean con el sintetizador.';
+    else if (cargando) el.textContent = 'Buscando sonidos en la carpeta «sonidos»…';
+    else el.textContent = 'No hay archivos en la carpeta «sonidos»: se usan sonidos sintetizados y la voz. Revisa sonidos/LEEME.txt.';
+  }
+};
+
+function pantallaCompletaDisponible() {
+  var d = document.documentElement;
+  return !!(d.requestFullscreen || d.webkitRequestFullscreen);
+}
+function alternarPantallaCompleta() {
+  var enPantalla = document.fullscreenElement || document.webkitFullscreenElement;
+  var r;
+  try {
+    if (enPantalla) r = (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else {
+      var d = document.documentElement;
+      r = (d.requestFullscreen || d.webkitRequestFullscreen).call(d);
+    }
+  } catch (e) { /* no permitido */ }
+  if (r && r.catch) r.catch(function () {});
+}
+function actualizarBotonPantalla() {
+  var enPantalla = document.fullscreenElement || document.webkitFullscreenElement;
+  $('#btn-pantalla').textContent = enPantalla ? 'Salir de pantalla completa' : 'Pantalla completa';
+}
+
+/* =========================================================
+   9. INICIO
+   ========================================================= */
+function iniciar() {
+  cargarPrefs();
+  Explorar.render();
+  Panel.render();
+  aplicarPrefs();
+  Sonido.precargar();
+
+  // El audio se activa en el primer toque o tecla
+  ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
+    window.addEventListener(ev, function () { Sonido.iniciar(); }, { once: true, passive: true, capture: true });
+  });
+
+  if (Voz.disponible) {
+    Voz.elegir();
+    if ('onvoiceschanged' in window.speechSynthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', function () { Voz.elegir(); });
+    }
+  }
+
+  $$('.btn-modo').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.modo === 'explorar') mostrarModo('explorar');
+      else Juego.iniciar(b.dataset.modo);
+    });
+  });
+  $('#btn-siguiente').addEventListener('click', function () { Juego.siguiente(); });
+  $('#btn-otra-vez').addEventListener('click', function () { Juego.iniciar(Juego.tipo); });
+  $('#btn-volver').addEventListener('click', function () { mostrarModo('explorar'); });
+
+  // Si la pestaña se oculta, se calla todo
+  document.addEventListener('visibilitychange', function () { if (document.hidden) Sonido.detener(); });
+  window.addEventListener('resize', function () { if (Confeti.raf) Confeti.ajustar(); });
+}
+
+iniciar();
+
+// Acceso para pruebas desde la consola
+window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, prefs: prefs };
+})();
+</script>
+</body>
+</html>

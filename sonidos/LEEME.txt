@@ -1,0 +1,39 @@
+CARPETA DE SONIDOS REALES
+=========================
+
+El tablero funciona sin esta carpeta: si falta un archivo, crea un sonido
+parecido con el sintetizador del navegador y una voz lee la onomatopeya.
+Si quieres sonidos reales de animales, copia aquí estos 8 archivos
+con estos nombres EXACTOS (en minúsculas, sin tildes):
+
+  caballo.mp3
+  vaca.mp3
+  carnero.mp3
+  gallina.mp3
+  pato.mp3
+  pollo.mp3
+  cerdo.mp3
+  pavo.mp3
+
+Puedes poner solo algunos: los que falten se seguirán sintetizando.
+
+DÓNDE CONSEGUIRLOS
+------------------
+Usa audios de dominio público o con licencia CC0 (libres, sin pedir
+permiso ni citar al autor), por ejemplo:
+  - Freesound (freesound.org): busca el animal en inglés (cow, horse,
+    sheep, hen, duck, chick, pig, turkey) y filtra por licencia
+    "Creative Commons 0".
+  - Pixabay Sounds (pixabay.com/sound-effects).
+Revisa siempre la licencia antes de descargar.
+
+DURACIÓN IDEAL
+--------------
+De 1 a 3 segundos por sonido. Si el audio es más largo, recórtalo
+(por ejemplo, con Audacity, que es gratuito) para que los niños
+escuchen solo el sonido del animal.
+
+COMPROBAR
+---------
+Abre index.html, toca el botón ⚙ (esquina superior derecha) y mira
+la línea "Sonidos reales": indica cuántos archivos encontró.
