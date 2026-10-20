@@ -99,9 +99,10 @@ body[data-cielo="noche"] {
 body[data-cielo="tarde"] .cielo-tarde, body[data-cielo="noche"] .cielo-noche { opacity: 1; }
 body[data-cielo="tarde"] .cielo-dia, body[data-cielo="noche"] .cielo-dia { opacity: 0; }
 .colinas path, .granero [class] { transition: fill 1.2s; }
-.colinas .c1 { fill: var(--colina-1); } .colinas .c2 { fill: var(--colina-2); } .colinas .c3 { fill: var(--colina-3); }
-.granero .g-muro { fill: var(--muro); } .granero .g-techo { fill: var(--techo); }
-.granero .g-puerta { fill: var(--puerta); } .granero .ventana { fill: var(--ventana); }
+.c1 { fill: var(--colina-1); } .c2 { fill: var(--colina-2); } .c3 { fill: var(--colina-3); }
+.g-muro { fill: var(--muro); } .g-techo { fill: var(--techo); }
+.g-puerta { fill: var(--puerta); } .ventana { fill: var(--ventana); }
+.escena .c1, .escena .c2, .escena .c3, .escena [class^="g-"], .escena .ventana { transition: fill 1.2s; }
 .nube { transition: opacity 1.2s; }
 body[data-cielo="noche"] .nube { opacity: .25; }
 body[data-cielo="noche"] .cerca { filter: brightness(.45); }
@@ -609,6 +610,119 @@ body.sin-guia .guia-globo::before { display: none; }
 .logro-stickers { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .logro-stickers .sticker { width: clamp(70px, 9vw, 110px); min-height: 0; }
 
+/* =========================================================
+   GRANJA VIVA
+   ========================================================= */
+.granja-zona { max-width: 1500px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px); }
+.escena-marco {
+  overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+  border: 4px solid var(--tinta); border-radius: var(--radio); box-shadow: var(--sombra);
+  width: fit-content; max-width: 100%; margin: 0 auto;
+}
+.escena {
+  position: relative; aspect-ratio: 1000 / 640;
+  width: min(calc(100vw - 2 * clamp(10px, 2vw, 28px) - 8px), max(640px, calc((100vh - 430px) * 1.5625)));
+  min-width: 640px;
+  background: linear-gradient(#7cc8f0, #c9efff 55%);
+}
+body[data-cielo="tarde"] .escena { background: linear-gradient(#ff9a66, #ffd9a0 55%); }
+body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 55%); }
+.escena > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.animal-escena, .puertas { cursor: pointer; }
+.animal-escena:focus, .puertas:focus { outline: none; }
+.animal-escena .foco, .puertas .foco { fill: transparent; stroke: none; }
+.animal-escena:focus-visible .foco, .puertas:focus-visible .foco { stroke: var(--azul-foco); stroke-width: 7; stroke-dasharray: 14 8; }
+.animal-escena .zzz { position: static; font-size: 34px; fill: #fff; stroke: var(--tinta); stroke-width: 3; paint-order: stroke; }
+.granero-escena .hoja { transform-box: fill-box; transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
+.granero-escena .hoja-izq { transform-origin: 0% 50%; }
+.granero-escena .hoja-der { transform-origin: 100% 50%; }
+.granero-escena.abierto .hoja { transform: scaleX(.1); }
+.vaca-granero { opacity: 0; pointer-events: none; transition: opacity .5s; }
+.granero-escena.abierto .vaca-granero { opacity: 1; pointer-events: auto; }
+.globo-escena {
+  position: absolute; z-index: 2; transform: translate(-50%, -100%);
+  width: max-content; max-width: 40%; padding: 2px 14px; text-align: center; line-height: 1.1;
+  font-size: clamp(1.4rem, 2.2vw, 2.2rem); font-weight: 800;
+  background: #fff; border: 4px solid var(--tinta); border-radius: 22px; pointer-events: none;
+  animation: globo-escena .4s cubic-bezier(.3, 1.6, .5, 1);
+}
+.globo-escena::after {
+  content: ''; position: absolute; left: 50%; bottom: -14px; width: 18px; height: 18px;
+  background: #fff; border-right: 4px solid var(--tinta); border-bottom: 4px solid var(--tinta);
+  transform: translateX(-50%) rotate(45deg);
+}
+@keyframes globo-escena { from { transform: translate(-50%, -100%) scale(0); } to { transform: translate(-50%, -100%) scale(1); } }
+.escena-frase {
+  display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 72px;
+  width: fit-content; max-width: 100%; margin: clamp(8px, 1.4vh, 14px) auto 0; padding: 4px 8px 4px 22px;
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem); font-weight: 800;
+  background: rgba(255, 250, 240, .95); border: 4px solid var(--tinta); border-radius: 999px;
+}
+.escena-frase:empty { visibility: hidden; }
+
+/* =========================================================
+   MEMORIA
+   ========================================================= */
+.memoria-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vw, 16px);
+  width: 100%; max-width: min(100%, calc((100vh - 500px) * 4 / 3 + 50px)); min-width: min(100%, 300px); margin: 0 auto;
+}
+@media (min-width: 700px) { .memoria-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.carta { aspect-ratio: 1 / 1; min-height: 96px; padding: 0; border: 0; background: none; perspective: 900px; border-radius: 20px; }
+.carta-int { position: relative; display: block; width: 100%; height: 100%; transition: transform .45s; transform-style: preserve-3d; }
+.carta.volteada .carta-int { transform: rotateY(180deg); }
+.carta-cara {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 4px solid var(--tinta); border-radius: 20px; box-shadow: 0 4px 0 rgba(58, 38, 20, .35);
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; overflow: hidden;
+}
+.carta-dorso {
+  background-color: #d9412e;
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, .16) 0 10px, transparent 10px 20px);
+}
+.carta-dorso svg { width: 58%; height: 58%; }
+.carta-frente { transform: rotateY(180deg); background: var(--color); }
+.carta-frente svg { width: 88%; height: 88%; overflow: visible; }
+.carta-onoma { padding: 4px; text-align: center; font-size: clamp(1.4rem, 2.6vw, 2.3rem); font-weight: 800; line-height: 1.05; background: #fff; }
+.carta-onoma svg { width: 34%; height: auto; margin-top: 6px; }
+.carta.pareja .carta-cara { box-shadow: 0 0 0 5px #ffd23f, 0 4px 0 rgba(58, 38, 20, .35); }
+.carta:not(.volteada):hover .carta-int { transform: translateY(-4px); }
+.memoria-info { margin: 0; font-size: 1.25rem; font-weight: 700; }
+
+/* =========================================================
+   CANCIÓN
+   ========================================================= */
+.cancion-escenario { display: grid; grid-template-columns: 1fr; gap: clamp(10px, 2vw, 24px); width: 100%; align-items: center; }
+@media (min-width: 900px) { .cancion-escenario { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } }
+.cancion-animal {
+  position: relative; display: flex; justify-content: center;
+  padding: 10px; background: var(--color, #fff); border: 4px solid var(--tinta); border-radius: var(--radio);
+}
+.cancion-animal .ilustracion { border: 0; background: none; }
+.cancion-animal .ilustracion svg { height: clamp(140px, 30vh, 320px); transition: filter .6s; }
+.cancion-animal.oculto .ilustracion svg { filter: brightness(0) opacity(.55); }
+.cancion-animal .incognita {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  font-size: clamp(4rem, 9vw, 7rem); font-weight: 800; color: #fff; text-shadow: 0 4px 0 var(--tinta);
+}
+.cancion-animal.oculto .incognita { display: flex; }
+.cancion-letra { display: flex; flex-direction: column; gap: 6px; min-height: 3.6em; font-size: clamp(1.5rem, 2.8vw, 2.5rem); font-weight: 800; line-height: 1.2; }
+.verso { margin: 0; }
+.silaba { display: inline-block; padding: 0 1px; border-radius: 8px; transition: background-color .1s, transform .1s; }
+.silaba.sonando { background: var(--amarillo); transform: scale(1.12); }
+.silaba.onoma { color: #b3261e; }
+.palmas { display: flex; align-items: center; gap: 10px; font-size: clamp(1.3rem, 2.2vw, 1.8rem); font-weight: 800; }
+.palmas svg { width: clamp(50px, 6vw, 72px); height: auto; }
+.palmas.golpe svg { animation: palmada .25s ease-out; }
+@keyframes palmada { 40% { transform: scale(1.3) rotate(-8deg); } }
+.cancion-opciones .opcion .ilustracion svg { height: clamp(90px, 16vh, 180px); }
+
+.mini-carta {
+  display: flex; align-items: center; justify-content: center; height: 80%; aspect-ratio: 3 / 4;
+  background: #d9412e; border: 3px solid var(--tinta); border-radius: 12px;
+}
+.mini-carta svg { width: 70%; height: auto; max-width: none; }
+
 /* Confeti */
 #confeti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 55; }
 
@@ -691,7 +805,9 @@ body.sin-guia .guia-globo::before { display: none; }
   <h1 class="letrero">Tablero de Sonidos de la Granja</h1>
   <nav class="modos" aria-label="Modos">
     <button type="button" class="btn-modo" data-modo="explorar" aria-current="page">Explorar</button>
+    <button type="button" class="btn-modo" data-modo="granja">Granja</button>
     <button type="button" class="btn-modo" data-modo="jugar">Jugar</button>
+    <button type="button" class="btn-modo" data-modo="cantar">Cantar</button>
     <button type="button" class="btn-modo" data-modo="album">Álbum</button>
   </nav>
 </header>
@@ -704,6 +820,14 @@ body.sin-guia .guia-globo::before { display: none; }
     <h2 id="titulo-explorar" class="sr-only">Explorar los sonidos</h2>
     <div class="guia-slot"></div>
     <div class="cuadricula" id="cuadricula"></div>
+  </section>
+
+  <!-- Granja viva -->
+  <section id="modo-granja" class="modo granja-zona" aria-labelledby="titulo-granja" hidden>
+    <h2 id="titulo-granja" class="sr-only">La granja viva</h2>
+    <div class="guia-slot"></div>
+    <div class="escena-marco"><div class="escena" id="escena"></div></div>
+    <p class="escena-frase" id="escena-frase" aria-live="polite"></p>
   </section>
 
   <!-- Menú de juegos -->
@@ -727,6 +851,46 @@ body.sin-guia .guia-globo::before { display: none; }
       <div class="juego-pie">
         <div class="guia-slot" style="width:auto;padding:0"></div>
         <button type="button" class="btn-grande btn-siguiente" id="btn-siguiente" hidden>¡Siguiente!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Juego de memoria -->
+  <section id="modo-memoria" class="modo juego" aria-labelledby="titulo-memoria" hidden>
+    <div class="tablero">
+      <div class="juego-cabecera">
+        <h2 class="juego-titulo" id="titulo-memoria">Memoria de la granja</h2>
+        <div class="progreso-zona">
+          <ol class="progreso" id="memoria-progreso"></ol>
+          <p class="memoria-info" id="memoria-info"></p>
+        </div>
+      </div>
+      <div class="memoria-grid" id="memoria-grid" role="group" aria-label="Cartas de memoria"></div>
+      <div class="juego-pie"><div class="guia-slot" style="width:auto;padding:0"></div></div>
+    </div>
+  </section>
+
+  <!-- Canción -->
+  <section id="modo-cancion" class="modo juego" aria-labelledby="titulo-cancion" hidden>
+    <div class="tablero">
+      <div class="juego-cabecera">
+        <h2 class="juego-titulo" id="titulo-cancion">En la granja de Rosa</h2>
+        <div class="progreso-zona">
+          <ol class="progreso" id="cancion-progreso"></ol>
+          <p class="ronda-texto" id="cancion-ronda"></p>
+        </div>
+      </div>
+      <div class="cancion-escenario">
+        <div class="cancion-animal oculto" id="cancion-animal"></div>
+        <div>
+          <div class="cancion-letra texto-opcional" id="cancion-letra" aria-hidden="true"></div>
+          <div class="palmas" id="palmas" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="opciones opciones-3 cancion-opciones" id="cancion-opciones" role="group" aria-label="¿Quién canta?" hidden></div>
+      <div class="juego-pie">
+        <div class="guia-slot" style="width:auto;padding:0"></div>
+        <button type="button" class="btn-grande" id="btn-cancion">¡A cantar!</button>
       </div>
     </div>
   </section>
@@ -834,7 +998,7 @@ function frase(a) { return capitalizar(a.articulo) + ' ' + a.nombre.toLowerCase(
 // Vuelve a disparar una animación CSS quitando y poniendo la clase
 function reiniciarAnimacion(el, clase) {
   el.classList.remove(clase);
-  void el.offsetWidth;
+  void el.getBoundingClientRect();
   el.classList.add(clase);
 }
 function porId(id) {
@@ -895,6 +1059,7 @@ var ANIMALES = [
   {
     id: 'caballo', nombre: 'Caballo', articulo: 'el', onomatopeya: '¡Iiiiih!', verbo: 'relincha',
     color: '#ffe2b8', audio: 'sonidos/caballo.mp3',
+    canto: 'iih', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['sombrero', 160, 40, 0.92, 22], ['mono', 140, 104, 0.8, -12], ['flor', 147, 42, 0.9, 0]],
     svg: lienzo(
@@ -920,6 +1085,7 @@ var ANIMALES = [
   {
     id: 'vaca', nombre: 'Vaca', articulo: 'la', onomatopeya: '¡Muuu!', verbo: 'muge',
     color: '#c9efb4', audio: 'sonidos/vaca.mp3',
+    canto: 'muu', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['chullo', 100, 36, 1.05, 0], ['lentes', 100, 70, 0.95, 0], ['corona', 100, 32, 1, 0]],
     svg: lienzo(
@@ -950,6 +1116,7 @@ var ANIMALES = [
   {
     id: 'carnero', nombre: 'Carnero', articulo: 'el', onomatopeya: '¡Beee!', verbo: 'bala',
     color: '#cfe0ff', audio: 'sonidos/carnero.mp3',
+    canto: 'bee', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['fiesta', 100, 48, 0.8, 0], ['lentes', 100, 84, 0.55, 0], ['mono', 100, 124, 0.8, 0]],
     svg: lienzo(
@@ -972,6 +1139,7 @@ var ANIMALES = [
   {
     id: 'gallina', nombre: 'Gallina', articulo: 'la', onomatopeya: '¡Cloc, cloc!', verbo: 'cacarea',
     color: '#fff1a6', audio: 'sonidos/gallina.mp3',
+    canto: 'cloc', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['corona', 140, 54, 0.7, 12], ['flor', 124, 60, 0.8, 0], ['mono', 130, 100, 0.7, -20]],
     svg: lienzo(
@@ -992,6 +1160,7 @@ var ANIMALES = [
   {
     id: 'pato', nombre: 'Pato', articulo: 'el', onomatopeya: '¡Cuac, cuac!', verbo: 'grazna',
     color: '#bfe7ff', audio: 'sonidos/pato.mp3',
+    canto: 'cuac', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['sombrero', 130, 46, 0.85, 10], ['mono', 132, 104, 0.75, 0], ['fiesta', 128, 46, 0.75, 12]],
     svg: lienzo(
@@ -1012,6 +1181,7 @@ var ANIMALES = [
   {
     id: 'pollo', nombre: 'Pollo', articulo: 'el', onomatopeya: '¡Pío, pío!', verbo: 'pía',
     color: '#ffd3e0', audio: 'sonidos/pollo.mp3',
+    canto: 'pío', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['chullo', 100, 74, 1, 0], ['lentes', 100, 106, 0.95, 0], ['flor', 132, 80, 0.9, 0]],
     svg: lienzo(
@@ -1028,6 +1198,7 @@ var ANIMALES = [
   {
     id: 'cerdo', nombre: 'Cerdo', articulo: 'el', onomatopeya: '¡Oinc, oinc!', verbo: 'gruñe',
     color: '#c8f0dc', audio: 'sonidos/cerdo.mp3',
+    canto: 'oinc', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['sombrero', 100, 44, 1.2, 0], ['lentes', 100, 78, 1.05, 0], ['mono', 100, 140, 0.9, 0]],
     svg: lienzo(
@@ -1048,6 +1219,7 @@ var ANIMALES = [
   {
     id: 'pavo', nombre: 'Pavo', articulo: 'el', onomatopeya: '¡Glu, glu, glu!', verbo: 'gluglutea',
     color: '#e4d9ff', audio: 'sonidos/pavo.mp3',
+    canto: 'glu', // sílaba que se canta en la canción
     // Stickers del álbum: [accesorio, x, y, escala, giro]
     stickers: [['corona', 100, 59, 0.88, 0], ['lentes', 100.5, 76, 0.52, 0], ['chullo', 100, 62, 0.78, 0]],
     svg: lienzo(
@@ -1447,6 +1619,17 @@ var Sonido = {
     });
   },
 
+  // Crujido de la puerta del granero
+  puerta: function () {
+    this.detener();
+    return this.sintetizar(function (s, bus, t) {
+      s.tono(bus, { t: t, dur: 0.6, tipo: 'sawtooth', vol: 0.2, ataque: 0.05, caida: 0.2, frecs: [[0, 90], [0.3, 150], [0.6, 110]],
+        filtro: { tipo: 'bandpass', f: 600, q: 4 }, am: { f: 22, prof: 0.7 } });
+      s.ruido(bus, { t: t + 0.55, dur: 0.15, vol: 0.3, filtro: { tipo: 'lowpass', f: 400, q: 1 } });
+      return 0.75;
+    });
+  },
+
   // Intento fallido: sonido muy suave, nunca un castigo
   suave: function () {
     this.detener();
@@ -1621,6 +1804,7 @@ var Cielo = {
     this.aplicar();
     var saludo = this.saludos[prefs.cielo];
     if (!$('#modo-explorar').hidden) Guia.instruir(Explorar.instruccion());
+    if (!$('#modo-granja').hidden) Guia.instruir(GranjaViva.instruccion());
     var dur = Sonido.campanita(prefs.cielo);
     Sonido.luego(dur * 1000, function () { Voz.hablar(saludo); });
     anunciar(saludo);
@@ -1804,7 +1988,9 @@ var JUEGOS = [
   { id: 'quien', titulo: '¿Quién hace este sonido?', desc: 'Escucha y toca al animal.', color: '#c9efb4',
     arte: function () { return '<span class="icono-grande">' + ICONO.play + '</span>' + porId('vaca').svg; } },
   { id: 'cual', titulo: '¿Qué animal es?', desc: 'Mira el animal y elige su sonido.', color: '#ffe2b8',
-    arte: function () { return porId('pollo').svg + ICONO_GLOBO; } }
+    arte: function () { return porId('pollo').svg + ICONO_GLOBO; } },
+  { id: 'memoria', titulo: 'Memoria', desc: 'Busca cada animal con su sonido.', color: '#cfe0ff',
+    arte: function () { return '<span class="mini-carta">' + ICONO_GRANERO + '</span>' + porId('pato').svg; } }
 ];
 var Jugar = {
   render: function () {
@@ -1821,6 +2007,7 @@ var Jugar = {
   },
   iniciar: function (id) {
     if (id === 'quien' || id === 'cual') Juego.iniciar(id);
+    else if (id === 'memoria') Memoria.iniciar();
   },
   mostrar: function () {
     mostrarModo('jugar');
@@ -2024,7 +2211,480 @@ var Juego = {
 };
 
 /* =========================================================
-   12. PANTALLA DE LOGRO (común a todos los juegos)
+   12. GRANJA VIVA: cada animal en su lugar
+   ========================================================= */
+// [id, x, y, escala] dentro de una escena de 1000 x 640. La vaca vive en el granero.
+var LUGARES = [
+  ['pavo', 560, 205, 0.72], ['caballo', 318, 238, 0.98], ['gallina', 742, 262, 0.6], ['pollo', 866, 318, 0.42],
+  ['pato', 690, 438, 0.68], ['carnero', 52, 452, 0.74], ['cerdo', 250, 462, 0.74]
+];
+function animalEnEscena(a, x, y, esc, clase) {
+  var interior = a.svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  return '<g class="animal-escena durmiente' + (clase ? ' ' + clase : '') + '" data-id="' + a.id + '" tabindex="0" role="button" ' +
+    'aria-label="' + a.nombre + '. Toca para escuchar cómo ' + a.verbo + '." data-x="' + (x + 100 * esc) + '" data-y="' + (y + 8 * esc) + '" ' +
+    'style="--retraso:' + (Math.random() * 4).toFixed(1) + 's">' +
+    '<g transform="translate(' + x + ' ' + y + ') scale(' + esc + ')">' +
+      '<rect class="foco" x="-4" y="-4" width="208" height="208" rx="26"/>' +
+      '<g data-animal="' + a.id + '" stroke="#3a2614" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">' + interior + '</g>' +
+      '<text class="zzz" x="140" y="24" aria-hidden="true">z z Z</text>' +
+    '</g></g>';
+}
+function hojaPuerta(x, clase) {
+  return '<g class="hoja ' + clase + '"><rect class="g-puerta" x="' + x + '" y="290" width="60" height="140"/>' +
+    '<path d="M' + x + ' 290l60 140M' + (x + 60) + ' 290l-60 140" stroke="#fffaf0" stroke-width="6"/>' +
+    '<rect x="' + x + '" y="290" width="60" height="140" fill="none" stroke="#fffaf0" stroke-width="6"/></g>';
+}
+
+var GranjaViva = {
+  render: function () {
+    var postes = '';
+    for (var x = 30; x <= 530; x += 50) postes += '<rect x="' + (x - 6) + '" y="440" width="12" height="74" rx="3" fill="#e0a86a"/>';
+    var animales = LUGARES.map(function (l) {
+      var a = porId(l[0]);
+      return a ? animalEnEscena(a, l[1], l[2], l[3]) : '';
+    }).join('');
+    var vaca = porId('vaca');
+    $('#escena').innerHTML =
+      '<svg viewBox="0 0 1000 640" stroke="#3a2614" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" role="group" aria-label="La granja">' +
+        '<path class="c1" d="M0 300C200 200 380 230 520 280s280-60 480-30v390H0z"/>' +
+        '<path class="c2" d="M0 390c250-50 600-40 1000-30v280H0z"/>' +
+        '<path class="c3" d="M0 560c300-20 700-10 1000-15v95H0z"/>' +
+        // Gallinero
+        '<rect x="800" y="200" width="130" height="100" fill="#f2cf6b"/>' +
+        '<path d="M785 205l80-55 80 55z" fill="#d9412e"/>' +
+        '<rect x="848" y="245" width="34" height="55" rx="17" fill="#5a3520"/>' +
+        '<path d="M848 300l-28 40 14 4 28-44z" fill="#c98b4f"/>' +
+        // Corral, charco y laguna
+        '<rect x="20" y="452" width="520" height="11" fill="#d39a5c"/><rect x="20" y="484" width="520" height="11" fill="#d39a5c"/>' + postes +
+        '<ellipse cx="330" cy="604" rx="92" ry="20" fill="#8a5a2e"/>' +
+        '<ellipse cx="800" cy="578" rx="175" ry="50" fill="#7cc8f0"/>' +
+        '<path d="M700 575q20-8 40 0M820 595q20-8 40 0M760 560q16-6 32 0" fill="none" stroke="#fff" stroke-width="4"/>' +
+        // Granero con puertas que se abren
+        '<g class="granero-escena" id="granero-escena">' +
+          '<rect class="g-muro" x="70" y="180" width="250" height="250"/>' +
+          '<path class="g-techo" d="M50 190l145-100 145 100-18 10-127-88-127 88z"/>' +
+          '<circle class="ventana" cx="195" cy="150" r="22"/>' +
+          '<rect x="135" y="290" width="120" height="140" fill="#4a2414"/>' +
+          '<path d="M140 430l20-30 15 30 15-34 15 34 20-28 15 28" fill="#f2cf6b" stroke-width="3"/>' +
+          (vaca ? animalEnEscena(vaca, 135, 302, 0.6, 'vaca-granero') : '') +
+          '<g class="puertas" tabindex="0" role="button" aria-label="Abrir el granero" aria-expanded="false">' +
+            '<rect class="foco" x="128" y="282" width="134" height="156" rx="10"/>' +
+            hojaPuerta(135, 'hoja-izq') + hojaPuerta(195, 'hoja-der') +
+          '</g>' +
+        '</g>' +
+        animales +
+      '</svg>';
+    this.cerrarGranero();
+
+    var escena = $('#escena'), self = this;
+    var accion = function (el) {
+      if (el.classList.contains('puertas')) self.alternarGranero();
+      else self.activar(el);
+    };
+    escena.addEventListener('click', function (e) {
+      var el = e.target.closest('.animal-escena, .puertas');
+      if (el) accion(el);
+    });
+    escena.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var el = e.target.closest('.animal-escena, .puertas');
+      if (el) { e.preventDefault(); accion(el); }
+    });
+    $('#escena-frase').addEventListener('click', function (e) {
+      if (e.target.closest('.btn-voz')) { Sonido.detener(); Voz.hablar(e.target.closest('.btn-voz').dataset.texto); }
+    });
+  },
+  activar: function (g) {
+    var a = porId(g.dataset.id);
+    this.limpiar();
+    g.classList.add('activa');
+    reiniciarAnimacion(g, 'animando');
+    clearTimeout(this.tAnim);
+    this.tAnim = setTimeout(function () { g.classList.remove('animando'); }, 1800);
+    var globo = document.createElement('span');
+    globo.className = 'globo-escena';
+    globo.setAttribute('aria-hidden', 'true');
+    globo.style.left = (Number(g.dataset.x) / 10) + '%';
+    globo.style.top = (Number(g.dataset.y) / 6.4) + '%';
+    globo.textContent = a.onomatopeya;
+    $('#escena').appendChild(globo);
+    var f = frase(a);
+    $('#escena-frase').innerHTML = '<span class="texto-opcional">' + f + '</span>' +
+      '<button type="button" class="btn-voz" data-texto="' + f + '" aria-label="Escuchar la frase: ' + f + '">' + ICONO.parlante + '</button>';
+    Sonido.reproducirAnimal(a);
+    anunciar(f + ': ' + a.onomatopeya);
+  },
+  alternarGranero: function () {
+    var g = $('#granero-escena');
+    if (g.classList.contains('abierto')) { this.cerrarGranero(); Sonido.puerta(); return; }
+    g.classList.add('abierto');
+    var p = $('.puertas', g);
+    p.setAttribute('aria-label', 'Cerrar el granero');
+    p.setAttribute('aria-expanded', 'true');
+    var vaca = $('.vaca-granero', g);
+    if (vaca) { vaca.setAttribute('tabindex', '0'); vaca.removeAttribute('aria-hidden'); }
+    var dur = Sonido.puerta();
+    Guia.texto('¡Mira quién vive en el granero!', 'exito');
+    Sonido.luego(dur * 1000, function () { Voz.hablar('¡Mira quién vive en el granero!'); });
+  },
+  cerrarGranero: function () {
+    var g = $('#granero-escena');
+    if (!g) return;
+    g.classList.remove('abierto');
+    var p = $('.puertas', g);
+    p.setAttribute('aria-label', 'Abrir el granero');
+    p.setAttribute('aria-expanded', 'false');
+    var vaca = $('.vaca-granero', g);
+    if (vaca) { vaca.setAttribute('tabindex', '-1'); vaca.setAttribute('aria-hidden', 'true'); vaca.classList.remove('activa', 'animando'); }
+  },
+  limpiar: function () {
+    $$('.animal-escena', $('#escena')).forEach(function (g) { g.classList.remove('activa', 'animando'); });
+    $$('.globo-escena', $('#escena')).forEach(function (el) { el.remove(); });
+    $('#escena-frase').innerHTML = '';
+  },
+  instruccion: function () {
+    return prefs.cielo === 'noche'
+      ? '¡Shhh! Es de noche en la granja. Toca a los animales para despertarlos.'
+      : 'Toca a los animales de la granja. ¿Quién vive en el granero?';
+  },
+  mostrar: function () {
+    mostrarModo('granja');
+    Guia.instruir(this.instruccion(), true);
+  }
+};
+
+/* =========================================================
+   13. MEMORIA: cada animal con su sonido
+   ========================================================= */
+var ICONO_GRANERO = '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M8 28L32 10l24 18v28H8z" fill="#fffaf0" stroke="#3a2614" stroke-width="4" stroke-linejoin="round"/><rect x="22" y="36" width="20" height="20" fill="#d9412e" stroke="#3a2614" stroke-width="3"/><path d="M22 36l20 20M42 36L22 56" stroke="#fffaf0" stroke-width="3"/></svg>';
+
+var Memoria = {
+  cartas: [], abiertas: [], bloqueo: false, intentos: 0, parejas: 0, total: 0, nuevos: [], timers: [],
+  iniciar: function () {
+    this.salir();
+    var pool = mezclar(animalesDelJuego()).slice(0, 6);
+    if (pool.length < 3) {
+      pool = pool.concat(mezclar(ANIMALES.filter(function (a) { return pool.indexOf(a) === -1; })).slice(0, 3 - pool.length));
+    }
+    this.total = pool.length;
+    this.parejas = 0; this.intentos = 0; this.abiertas = []; this.bloqueo = false; this.nuevos = [];
+    this.cartas = mezclar(pool.map(function (a) { return { animal: a, tipo: 'animal' }; })
+      .concat(pool.map(function (a) { return { animal: a, tipo: 'sonido' }; })));
+    mostrarModo('memoria');
+    this.render();
+    Guia.instruir('Voltea dos cartas y busca cada animal con su sonido.', true);
+  },
+  render: function () {
+    var self = this;
+    $('#memoria-grid').innerHTML = this.cartas.map(function (c, i) {
+      var a = c.animal;
+      var frente = c.tipo === 'animal'
+        ? '<span class="carta-cara carta-frente" data-animal="' + a.id + '">' + a.svg + '</span>'
+        : '<span class="carta-cara carta-frente carta-onoma">' + a.onomatopeya + ICONO.parlante + '</span>';
+      return '<button type="button" class="carta" data-i="' + i + '" style="--color:' + a.color + '" aria-label="' + self.etiqueta(i, false) + '">' +
+        '<span class="carta-int"><span class="carta-cara carta-dorso">' + ICONO_GRANERO + '</span>' + frente + '</span></button>';
+    }).join('');
+    this.info();
+  },
+  etiqueta: function (i, visible) {
+    var c = this.cartas[i];
+    if (!visible) return 'Carta ' + (i + 1) + ', boca abajo';
+    return 'Carta ' + (i + 1) + ': ' + (c.tipo === 'animal' ? c.animal.nombre : c.animal.onomatopeya);
+  },
+  info: function () {
+    var self = this, li = '';
+    for (var k = 0; k < this.total; k++) li += '<li class="' + (k < self.parejas ? 'oro' : '') + '">' + ICONO.estrella + '</li>';
+    $('#memoria-progreso').innerHTML = li;
+    $('#memoria-progreso').setAttribute('aria-label', 'Parejas: ' + this.parejas + ' de ' + this.total);
+    $('#memoria-info').textContent = 'Intentos: ' + this.intentos;
+  },
+  voltear: function (boton) {
+    var self = this, i = Number(boton.dataset.i), c = this.cartas[i], a = c.animal;
+    if (this.bloqueo || c.resuelta || this.abiertas.indexOf(i) !== -1) return;
+    boton.classList.add('volteada');
+    boton.setAttribute('aria-label', this.etiqueta(i, true));
+    if (c.tipo === 'animal') Sonido.reproducirAnimal(a);
+    else { Sonido.detener(); Voz.hablar(a.onomatopeya); }
+    this.abiertas.push(i);
+    if (this.abiertas.length < 2) return;
+
+    this.intentos++;
+    var i1 = this.abiertas[0], c1 = this.cartas[i1], b1 = $('.carta[data-i="' + i1 + '"]');
+    this.abiertas = [];
+    if (c1.animal === a && c1.tipo !== c.tipo) {
+      c.resuelta = c1.resuelta = true;
+      this.parejas++;
+      [b1, boton].forEach(function (b) { b.classList.add('pareja'); b.setAttribute('aria-disabled', 'true'); });
+      var cartaAnimal = c.tipo === 'animal' ? boton : b1;
+      reiniciarAnimacion(cartaAnimal, 'animando');
+      Guia.texto('¡Pareja! ' + frase(a) + ': ' + a.onomatopeya, 'exito');
+      Guia.animar('celebrar');
+      var st = Album.ganar(a);
+      if (st) this.nuevos.push(st);
+      this.info();
+      this.esperar(1300, function () {
+        Confeti.lanzar();
+        var d = Sonido.alegre();
+        Sonido.luego(d * 1000, function () { Voz.hablar('¡Pareja! ' + frase(a)); });
+      });
+      if (this.parejas === this.total) this.esperar(4200, function () { self.terminar(); });
+    } else {
+      this.bloqueo = true;
+      this.info();
+      this.esperar(1600, function () {
+        [b1, boton].forEach(function (b) {
+          b.classList.remove('volteada');
+          b.setAttribute('aria-label', self.etiqueta(Number(b.dataset.i), false));
+        });
+        self.bloqueo = false;
+        Guia.texto('¡Casi! Busca otra vez.', 'animo');
+        Guia.animar('animo');
+      });
+    }
+  },
+  terminar: function () {
+    var n = this.total;
+    var estrellas = [];
+    for (var k = 0; k < n; k++) estrellas.push('oro');
+    Logro.mostrar({
+      estrellas: estrellas,
+      etiqueta: 'Parejas encontradas: ' + n,
+      texto: '¡Encontraste las ' + n + ' parejas en ' + this.intentos + ' intentos!',
+      animo: this.intentos <= n + 2 ? '¡Qué buena memoria tienes!' : '¡Muy bien! Cada vez lo harás más rápido.',
+      nuevos: this.nuevos,
+      reintentar: function () { Memoria.iniciar(); }
+    });
+  },
+  esperar: function (ms, fn) { this.timers.push(setTimeout(fn, ms)); },
+  salir: function () {
+    this.timers.forEach(clearTimeout);
+    this.timers = [];
+  }
+};
+
+/* =========================================================
+   14. CANCIÓN «En la granja de Rosa»
+   Melodía tradicional de dominio público; letra propia.
+   ========================================================= */
+var NOTAS = { D4: 293.66, E4: 329.63, G4: 392, A4: 440, B4: 493.88 };
+var PULSO = 0.55; // segundos por tiempo
+// Cada sílaba: [texto, nota, tiempos]. «O» se reemplaza por el sonido del animal;
+// un guion final une la sílaba con la siguiente en la misma palabra.
+var VERSOS = {
+  granja: [['En', 'G4', 1], ['la', 'G4', 1], ['gran-', 'G4', 1], ['ja', 'D4', 1], ['de', 'E4', 1], ['Ro-', 'E4', 1], ['sa,', 'D4', 2]],
+  iao: [['i-', 'B4', 1], ['a,', 'B4', 1], ['i-', 'A4', 1], ['a,', 'A4', 1], ['¡o!', 'G4', 3]],
+  quien: [['Y un', 'D4', 1], ['a-', 'G4', 1], ['ni-', 'G4', 1], ['mal', 'G4', 1], ['can-', 'D4', 1], ['ta', 'E4', 1], ['a-', 'E4', 1], ['sí…', 'D4', 2]],
+  aqui: [['Con', 'D4', 0.5], ['un', 'D4', 0.5], ['O', 'G4', 1], ['a-', 'G4', 1], ['quí,', 'G4', 2],
+    ['con', 'D4', 0.5], ['un', 'D4', 0.5], ['O', 'G4', 1], ['a-', 'G4', 1], ['llá,', 'G4', 2]],
+  todos: [['a-', 'G4', 0.5], ['quí', 'G4', 0.5], ['O,', 'G4', 1], ['a-', 'G4', 0.5], ['llá', 'G4', 0.5], ['O,', 'G4', 1],
+    ['por', 'G4', 0.5], ['to-', 'G4', 0.5], ['dos', 'G4', 0.5], ['la-', 'G4', 0.5], ['dos', 'G4', 1], ['¡O!', 'G4', 1]]
+};
+var ICONO_PALMAS = '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g stroke="#3a2614" stroke-width="3" stroke-linejoin="round">' +
+  '<path d="M26 58c-9-2-15-10-15-20V20c0-3 4-4 5-1l3 11V12c0-3 5-3 5 0v16-20c0-3 5-3 5 0v20-16c0-3 5-3 5 0v26z" fill="#f5c08a"/>' +
+  '<path d="M38 58c9-2 15-10 15-20V20c0-3-4-4-5-1l-3 11V12c0-3-5-3-5 0v16-20c0-3-5-3-5 0v20-16c0-3-5-3-5 0v26z" fill="#e8a76b"/></g>' +
+  '<path d="M32 4v-2M22 6l-3-3M42 6l3-3" stroke="#ff8c42" stroke-width="3" stroke-linecap="round"/></svg>';
+
+var Cancion = {
+  estrofas: [], indice: 0, resultados: [], fallos: 0, fase: 'lista', nuevos: [], timers: [],
+  iniciar: function () {
+    this.salir();
+    this.estrofas = mezclar(animalesDelJuego()).slice(0, 5);
+    this.indice = 0; this.resultados = []; this.nuevos = [];
+    mostrarModo('cancion');
+    $('#palmas').innerHTML = ICONO_PALMAS + '<span class="texto-opcional">¡Aplaude!</span>';
+    this.prepararEstrofa();
+    Guia.instruir('¡Vamos a cantar! Aplaude con la música y adivina qué animal canta.', true);
+  },
+  prepararEstrofa: function () {
+    var a = this.estrofas[this.indice];
+    this.fallos = 0;
+    this.fase = 'lista';
+    var cont = $('#cancion-animal');
+    cont.className = 'cancion-animal oculto';
+    cont.style.setProperty('--color', '#fff');
+    cont.setAttribute('role', 'img');
+    cont.setAttribute('aria-label', 'Animal sorpresa');
+    cont.innerHTML = '<span class="ilustracion" data-animal="' + a.id + '">' + a.svg + '</span><span class="incognita" aria-hidden="true">?</span>';
+    $('#cancion-letra').innerHTML = '';
+    $('#cancion-opciones').hidden = true;
+    $('#cancion-opciones').innerHTML = '';
+    this.progreso();
+    var b = $('#btn-cancion');
+    b.textContent = this.indice === 0 ? '¡A cantar!' : '¡Otra estrofa!';
+    b.hidden = false;
+  },
+  progreso: function () {
+    var self = this;
+    $('#cancion-progreso').innerHTML = this.estrofas.map(function (a, i) {
+      return '<li class="' + (self.resultados[i] || (i === self.indice ? 'actual' : '')) + '">' + ICONO.estrella + '</li>';
+    }).join('');
+    $('#cancion-progreso').setAttribute('aria-label', 'Estrofa ' + (this.indice + 1) + ' de ' + this.estrofas.length);
+    $('#cancion-ronda').textContent = 'Estrofa ' + (this.indice + 1) + ' de ' + this.estrofas.length;
+  },
+  // El botón grande cambia según la fase de la estrofa
+  boton: function () {
+    if (this.fase === 'lista') this.cantarInicio();
+    else if (this.fase === 'adivinar') Sonido.reproducirAnimal(this.estrofas[this.indice]);
+    else if (this.fase === 'fin') this.siguiente();
+  },
+  cantarInicio: function () {
+    var self = this, a = this.estrofas[this.indice];
+    this.fase = 'cantando';
+    $('#btn-cancion').hidden = true;
+    Guia.texto('¡Canta conmigo y aplaude!', '');
+    anunciar('Empieza la estrofa ' + (this.indice + 1));
+    this.cantar([VERSOS.granja, VERSOS.iao, VERSOS.quien], a, function () { self.adivinar(); });
+  },
+  adivinar: function () {
+    var self = this, a = this.estrofas[this.indice];
+    this.fase = 'adivinar';
+    Guia.texto('¿Quién canta así? Escucha y toca al animal.', '');
+    Sonido.reproducirAnimal(a);
+    var opciones = mezclar([a].concat(Juego.distractores(a, 2)));
+    var cont = $('#cancion-opciones');
+    cont.innerHTML = opciones.map(function (o) {
+      return '<button type="button" class="opcion" data-id="' + o.id + '" style="--color:' + o.color + '" aria-label="' + o.nombre + '">' +
+        '<span class="ilustracion" data-animal="' + o.id + '">' + o.svg + '</span>' +
+        '<span class="nombre texto-opcional" aria-hidden="true">' + o.nombre + '</span></button>';
+    }).join('');
+    cont.hidden = false;
+    $$('.opcion', cont).forEach(function (b) {
+      b.addEventListener('click', function () { self.elegir(b.dataset.id, b); });
+    });
+    var b = $('#btn-cancion');
+    b.textContent = 'Escuchar otra vez';
+    b.hidden = false;
+  },
+  elegir: function (id, boton) {
+    if (this.fase !== 'adivinar' || boton.disabled) return;
+    var self = this, a = this.estrofas[this.indice], cont = $('#cancion-opciones');
+    if (id === a.id) {
+      this.fase = 'revelado';
+      this.resultados[this.indice] = this.fallos === 0 ? 'oro' : 'plata';
+      boton.classList.add('correcta');
+      $$('.opcion', cont).forEach(function (b) {
+        if (b !== boton && !b.disabled) { b.disabled = true; b.classList.add('apagada'); }
+      });
+      var anim = $('#cancion-animal');
+      anim.classList.remove('oculto');
+      anim.style.setProperty('--color', a.color);
+      anim.setAttribute('aria-label', a.nombre);
+      reiniciarAnimacion(anim, 'animando');
+      var st = Album.ganar(a);
+      if (st) this.nuevos.push(st);
+      this.progreso();
+      var quien = '¡Es ' + a.articulo + ' ' + a.nombre.toLowerCase() + '!';
+      Guia.texto(quien + ' ¡Ahora cantemos!', 'exito');
+      Guia.animar('celebrar');
+      Confeti.lanzar();
+      $('#btn-cancion').hidden = true;
+      Sonido.detener();
+      Voz.hablar(quien, function () {
+        self.esperar(300, function () {
+          cont.hidden = true;
+          self.cantar([VERSOS.aqui, VERSOS.todos, VERSOS.granja, VERSOS.iao], a, function () { self.finEstrofa(); });
+        });
+      });
+    } else {
+      this.fallos++;
+      boton.disabled = true;
+      boton.classList.add('incorrecta');
+      reiniciarAnimacion(boton, 'temblar');
+      Guia.texto('¡Inténtalo otra vez!', 'animo');
+      Guia.animar('animo');
+      Sonido.suave();
+      Sonido.luego(350, function () { Voz.hablar('¡Inténtalo otra vez!'); });
+    }
+  },
+  // Toca la melodía con bajo y palmas, y resalta cada sílaba de la letra
+  cantar: function (versos, animal, alTerminar) {
+    var self = this, letra = $('#cancion-letra'), notas = [], t = 0;
+    Sonido.detener();
+    letra.innerHTML = versos.map(function (v, iv) {
+      var html = v.map(function (sil, is) {
+        var m = /^(¡?)O([,!]*)$/.exec(sil[0]);
+        var sigue = !m && /-$/.test(sil[0]);
+        var texto = m ? m[1] + (animal.canto || animal.nombre.toLowerCase()) + m[2] : sil[0].replace(/-$/, '');
+        notas.push({ t: t, dur: sil[2] * PULSO, f: NOTAS[sil[1]], id: iv + '-' + is, onoma: !!m });
+        t += sil[2] * PULSO;
+        return '<span class="silaba' + (m ? ' onoma' : '') + '" data-s="' + iv + '-' + is + '">' + texto + '</span>' + (sigue ? '' : ' ');
+      }).join('');
+      t += PULSO; // respiro entre versos
+      return '<p class="verso">' + html + '</p>';
+    }).join('');
+    var total = t;
+    Sonido.sintetizar(function (s, bus, t0) {
+      notas.forEach(function (n) {
+        s.tono(bus, { t: t0 + n.t, dur: n.dur * 0.9, tipo: 'triangle', vol: 0.34, ataque: 0.01, caida: Math.min(0.15, n.dur * 0.4), frecs: [[0, n.f], [n.dur, n.f]] });
+      });
+      for (var b = 0; b * PULSO < total; b++) {
+        var tb = t0 + b * PULSO;
+        if (b % 2 === 0) {
+          var f = b % 4 === 0 ? 98 : 146.83;
+          s.tono(bus, { t: tb, dur: PULSO * 0.8, tipo: 'triangle', vol: 0.3, ataque: 0.01, caida: 0.2, frecs: [[0, f], [PULSO * 0.8, f]] });
+        } else {
+          s.ruido(bus, { t: tb, dur: 0.09, vol: 0.35, filtro: { tipo: 'bandpass', f: 1400, q: 0.8 } });
+        }
+      }
+      return total;
+    });
+    var turno = Sonido.turno;
+    notas.forEach(function (n) {
+      self.esperar(n.t * 1000, function () {
+        if (turno !== Sonido.turno) return;
+        $$('.silaba.sonando', letra).forEach(function (x) { x.classList.remove('sonando'); });
+        var el = $('.silaba[data-s="' + n.id + '"]', letra);
+        if (el) el.classList.add('sonando');
+        if (n.onoma) reiniciarAnimacion($('#cancion-animal'), 'animando');
+      });
+    });
+    for (var b = 1; b * PULSO < total; b += 2) {
+      self.esperar(b * PULSO * 1000, function () {
+        if (turno === Sonido.turno) reiniciarAnimacion($('#palmas'), 'golpe');
+      });
+    }
+    this.esperar(total * 1000 + 100, function () {
+      if (turno !== Sonido.turno) return;
+      $$('.silaba.sonando', letra).forEach(function (x) { x.classList.remove('sonando'); });
+      alTerminar();
+    });
+  },
+  finEstrofa: function () {
+    this.fase = 'fin';
+    var ultima = this.indice === this.estrofas.length - 1;
+    var b = $('#btn-cancion');
+    b.textContent = ultima ? '¡Terminar!' : '¡Otra estrofa!';
+    b.hidden = false;
+    try { b.focus({ preventScroll: true }); } catch (e) { b.focus(); }
+    Guia.texto(ultima ? '¡Qué bonito cantamos!' : '¡Muy bien! ¿Cantamos otra?', 'exito');
+  },
+  siguiente: function () {
+    this.indice++;
+    if (this.indice >= this.estrofas.length) { this.terminar(); return; }
+    this.prepararEstrofa();
+    this.cantarInicio();
+  },
+  terminar: function () {
+    var n = this.estrofas.length;
+    var oro = this.resultados.filter(function (r) { return r === 'oro'; }).length;
+    Logro.mostrar({
+      estrellas: this.resultados.slice(),
+      etiqueta: 'Estrellas ganadas: ' + oro + ' de ' + n,
+      texto: '¡Cantaste ' + n + (n === 1 ? ' estrofa' : ' estrofas') + ' y adivinaste ' + oro + ' a la primera!',
+      animo: '¡Qué lindo cantas! Rosa y los animales están felices.',
+      nuevos: this.nuevos,
+      reintentar: function () { Cancion.iniciar(); }
+    });
+  },
+  esperar: function (ms, fn) { this.timers.push(setTimeout(fn, ms)); },
+  salir: function () {
+    this.timers.forEach(clearTimeout);
+    this.timers = [];
+  }
+};
+
+/* =========================================================
+   15. PANTALLA DE LOGRO (común a todos los juegos)
    ========================================================= */
 var Logro = {
   reintentar: null,
@@ -2051,12 +2711,16 @@ var Logro = {
 };
 
 // Cambia la pantalla visible
-var MODOS = ['explorar', 'jugar', 'juego', 'logro', 'album'];
-var MENU_DE = { explorar: 'explorar', jugar: 'jugar', juego: 'jugar', logro: 'jugar', album: 'album' };
+var MODOS = ['explorar', 'granja', 'jugar', 'juego', 'memoria', 'cancion', 'logro', 'album'];
+var MENU_DE = { explorar: 'explorar', granja: 'granja', jugar: 'jugar', juego: 'jugar', memoria: 'jugar', cancion: 'cantar', logro: 'jugar', album: 'album' };
 function mostrarModo(modo) {
   Sonido.detener();
   Juego.salir();
+  Memoria.salir();
+  Cancion.salir();
   Explorar.limpiar();
+  GranjaViva.limpiar();
+  GranjaViva.cerrarGranero();
   MODOS.forEach(function (m) { $('#modo-' + m).hidden = m !== modo; });
   $$('.btn-modo').forEach(function (b) {
     if (b.dataset.modo === MENU_DE[modo]) b.setAttribute('aria-current', 'page');
@@ -2067,7 +2731,7 @@ function mostrarModo(modo) {
 }
 
 /* =========================================================
-   13. PANEL DOCENTE
+   16. PANEL DOCENTE
    ========================================================= */
 var Panel = {
   ultimoFoco: null,
@@ -2211,7 +2875,7 @@ function actualizarBotonPantalla() {
 }
 
 /* =========================================================
-   14. INICIO
+   17. INICIO
    ========================================================= */
 function iniciar() {
   cargarPrefs();
@@ -2219,6 +2883,7 @@ function iniciar() {
   Guia.crear();
   Cielo.crearEstrellas();
   Explorar.render();
+  GranjaViva.render();
   Jugar.render();
   Panel.render();
   aplicarPrefs();
@@ -2238,12 +2903,23 @@ function iniciar() {
     }
   }
 
-  var abrirModo = { explorar: function () { Explorar.mostrar(); }, jugar: function () { Jugar.mostrar(); }, album: function () { Album.mostrar(); } };
+  var abrirModo = {
+    explorar: function () { Explorar.mostrar(); },
+    granja: function () { GranjaViva.mostrar(); },
+    jugar: function () { Jugar.mostrar(); },
+    cantar: function () { Cancion.iniciar(); },
+    album: function () { Album.mostrar(); }
+  };
   $$('.btn-modo').forEach(function (b) {
     b.addEventListener('click', function () { abrirModo[b.dataset.modo](); });
   });
   $('#btn-cielo').addEventListener('click', function () { Cielo.cambiar(); });
   $('#btn-siguiente').addEventListener('click', function () { Juego.siguiente(); });
+  $('#btn-cancion').addEventListener('click', function () { Cancion.boton(); });
+  $('#memoria-grid').addEventListener('click', function (e) {
+    var c = e.target.closest('.carta');
+    if (c) Memoria.voltear(c);
+  });
   $('#btn-otra-vez').addEventListener('click', function () { if (Logro.reintentar) Logro.reintentar(); });
   $('#btn-volver').addEventListener('click', function () { Explorar.mostrar(); });
   $('#btn-ver-album').addEventListener('click', function () { Album.mostrar(); });
@@ -2263,7 +2939,7 @@ function iniciar() {
 iniciar();
 
 // Acceso para pruebas desde la consola
-window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Album: Album, Guia: Guia, Cielo: Cielo, prefs: prefs };
+window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Memoria: Memoria, Cancion: Cancion, GranjaViva: GranjaViva, Album: Album, Guia: Guia, Cielo: Cielo, prefs: prefs };
 })();
 </script>
 </body>
