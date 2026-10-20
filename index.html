@@ -633,10 +633,10 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
 .animal-escena .foco, .puertas .foco { fill: transparent; stroke: none; }
 .animal-escena:focus-visible .foco, .puertas:focus-visible .foco { stroke: var(--azul-foco); stroke-width: 7; stroke-dasharray: 14 8; }
 .animal-escena .zzz { position: static; font-size: 34px; fill: #fff; stroke: var(--tinta); stroke-width: 3; paint-order: stroke; }
-.granero-escena .hoja { transform-box: fill-box; transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
+.granero-escena .puerta-hoja { transform-box: fill-box; transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
 .granero-escena .hoja-izq { transform-origin: 0% 50%; }
 .granero-escena .hoja-der { transform-origin: 100% 50%; }
-.granero-escena.abierto .hoja { transform: scaleX(.1); }
+.granero-escena.abierto .puerta-hoja { transform: scaleX(.1); }
 .vaca-granero { opacity: 0; pointer-events: none; transition: opacity .5s; }
 .granero-escena.abierto .vaca-granero { opacity: 1; pointer-events: auto; }
 .globo-escena {
@@ -722,6 +722,64 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
   background: #d9412e; border: 3px solid var(--tinta); border-radius: 12px;
 }
 .mini-carta svg { width: 70%; height: auto; max-width: none; }
+
+/* =========================================================
+   FICHAS PARA IMPRIMIR
+   ========================================================= */
+.fichas { max-width: 1000px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px); }
+.fichas-barra { align-items: stretch; margin-bottom: 18px; font-size: 1.2rem; }
+.fichas-barra h2 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.4rem); }
+.fichas-barra p { margin: 0; }
+.fichas-barra label { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.fichas-barra input[type="checkbox"] { width: 28px; height: 28px; accent-color: var(--verde); flex: 0 0 auto; }
+.fichas-botones { display: flex; flex-wrap: wrap; gap: 12px; }
+.fichas-barra .nota { font-size: 1rem; color: var(--tinta-suave); }
+.hoja-marco { margin: 0 auto 18px; overflow: hidden; border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); }
+.hoja {
+  width: 210mm; height: 297mm; padding: 12mm; transform-origin: 0 0;
+  display: flex; flex-direction: column; gap: 6mm;
+  background: #fff; color: #222; font-family: var(--fuente);
+}
+.hoja .ojo { animation: none !important; }
+.hoja-datos { display: flex; justify-content: space-between; gap: 8mm; font-size: 15pt; font-weight: 700; }
+.hoja-titulo {
+  margin: 0; text-align: center; line-height: 1.05; font-size: 48pt; font-weight: 800;
+  color: #fff; -webkit-text-stroke: 2.2px #222; paint-order: stroke fill;
+}
+.hoja-subtitulo { margin: 0; text-align: center; font-size: 26pt; font-weight: 800; line-height: 1.1; }
+.hoja-instr { margin: 0; text-align: center; font-size: 15pt; font-weight: 600; }
+.hoja-dibujo { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+.hoja-dibujo svg { width: 100%; height: 100%; max-height: 150mm; overflow: visible; }
+.hoja-globo {
+  position: relative; align-self: center; padding: 2mm 10mm; border: 1mm solid #222; border-radius: 10mm;
+  font-size: 44pt; font-weight: 800; line-height: 1.1; color: #fff; -webkit-text-stroke: 2px #222; paint-order: stroke fill;
+}
+.hoja-pie { margin: 0; text-align: center; font-size: 12pt; color: #555; }
+/* Dibujo para colorear: sin relleno, salvo ojos, cascos y manchas oscuras */
+.colorear svg [fill]:not([fill="#3a2614"]):not([fill="#2b1a0e"]):not([fill="none"]) { fill: #fff !important; }
+.colorear svg [stroke]:not([stroke="#3a2614"]):not([stroke="none"]) { stroke: #cfc6bb !important; }
+.unir-filas { flex: 1; display: flex; flex-direction: column; justify-content: space-around; }
+.unir-fila { display: flex; align-items: center; gap: 4mm; }
+.unir-animal { width: 42mm; height: 42mm; flex: 0 0 auto; }
+.unir-animal svg { width: 100%; height: 100%; overflow: visible; }
+.unir-fila .punto { width: 5mm; height: 5mm; border-radius: 50%; background: #222; flex: 0 0 auto; }
+.unir-fila .espacio { flex: 1; }
+.unir-sonido {
+  width: 62mm; flex: 0 0 auto; padding: 3mm 4mm; text-align: center;
+  border: .8mm solid #222; border-radius: 6mm; font-size: 24pt; font-weight: 800; line-height: 1.1;
+}
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  body { background: #fff !important; min-height: 0; }
+  body > *:not(main) { display: none !important; }
+  main { padding: 0; }
+  main > section:not(#modo-fichas) { display: none !important; }
+  .fichas { max-width: none; padding: 0; }
+  .fichas-barra { display: none !important; }
+  .hoja-marco { margin: 0; box-shadow: none; border-radius: 0; width: auto !important; height: auto !important; overflow: visible; }
+  .hoja { transform: none !important; break-after: page; page-break-after: always; }
+  .hoja-marco:last-child .hoja { break-after: auto; page-break-after: auto; }
+}
 
 /* Confeti */
 #confeti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 55; }
@@ -915,6 +973,22 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
     </div>
   </section>
 
+  <!-- Fichas para imprimir (se abren desde el panel docente) -->
+  <section id="modo-fichas" class="modo fichas" aria-labelledby="titulo-fichas" hidden>
+    <div class="tablero fichas-barra">
+      <h2 id="titulo-fichas">Fichas para imprimir</h2>
+      <p id="fichas-animales"></p>
+      <label><input type="checkbox" id="ficha-colorear" checked> Láminas para colorear (una por animal)</label>
+      <label><input type="checkbox" id="ficha-unir" checked> Ficha «Une cada animal con su sonido»</label>
+      <div class="fichas-botones">
+        <button type="button" class="btn-grande" id="btn-imprimir">Imprimir</button>
+        <button type="button" class="btn-grande secundario" id="btn-fichas-volver">Volver</button>
+      </div>
+      <p class="nota">Tamaño A4. Para enviarlas por correo, elige «Guardar como PDF» en la ventana de impresión.</p>
+    </div>
+    <div class="fichas-hojas" id="fichas-hojas"></div>
+  </section>
+
   <!-- Álbum de stickers -->
   <section id="modo-album" class="modo album" aria-labelledby="titulo-album" hidden>
     <h2 id="titulo-album" class="sr-only">Álbum de stickers</h2>
@@ -960,6 +1034,7 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
     <p class="nota" id="estado-audio"></p>
     <div class="panel-botones">
       <button type="button" class="btn-panel-accion" id="btn-pantalla">Pantalla completa</button>
+      <button type="button" class="btn-panel-accion" id="btn-fichas">Fichas para imprimir</button>
       <button type="button" class="btn-panel-accion principal" id="btn-cerrar-panel">Listo</button>
     </div>
   </div>
@@ -2230,7 +2305,7 @@ function animalEnEscena(a, x, y, esc, clase) {
     '</g></g>';
 }
 function hojaPuerta(x, clase) {
-  return '<g class="hoja ' + clase + '"><rect class="g-puerta" x="' + x + '" y="290" width="60" height="140"/>' +
+  return '<g class="puerta-hoja ' + clase + '"><rect class="g-puerta" x="' + x + '" y="290" width="60" height="140"/>' +
     '<path d="M' + x + ' 290l60 140M' + (x + 60) + ' 290l-60 140" stroke="#fffaf0" stroke-width="6"/>' +
     '<rect x="' + x + '" y="290" width="60" height="140" fill="none" stroke="#fffaf0" stroke-width="6"/></g>';
 }
@@ -2684,7 +2759,68 @@ var Cancion = {
 };
 
 /* =========================================================
-   15. PANTALLA DE LOGRO (común a todos los juegos)
+   15. FICHAS PARA IMPRIMIR
+   ========================================================= */
+var Fichas = {
+  mostrar: function () {
+    mostrarModo('fichas');
+    var n = animalesDelJuego().length;
+    $('#fichas-animales').textContent = 'Se usan los ' + n + (n === 1 ? ' animal elegido' : ' animales elegidos') + ' en el panel docente.';
+    this.render();
+  },
+  datos: function () {
+    return '<div class="hoja-datos"><span>Nombre: ______________________</span><span>Fecha: ____________</span></div>';
+  },
+  render: function () {
+    var self = this, animales = animalesDelJuego(), hojas = [];
+    if ($('#ficha-colorear').checked) {
+      animales.forEach(function (a) {
+        hojas.push('<div class="hoja">' + self.datos() +
+          '<h3 class="hoja-titulo">' + frase(a) + '</h3>' +
+          '<div class="hoja-dibujo colorear">' + a.svg + '</div>' +
+          '<div class="hoja-globo">' + a.onomatopeya + '</div>' +
+          '<p class="hoja-pie">Colorea ' + (a.articulo === 'la' ? 'a la ' : 'al ') + a.nombre.toLowerCase() + ' y repasa su sonido con tu lápiz.</p></div>');
+      });
+    }
+    if ($('#ficha-unir').checked && animales.length > 1) {
+      // Hasta 5 animales por hoja; si son más, se reparten en dos hojas parejas
+      var grupos = animales.length <= 5 ? [animales] : [animales.slice(0, Math.ceil(animales.length / 2)), animales.slice(Math.ceil(animales.length / 2))];
+      grupos.forEach(function (g) {
+        var sonidos = mezclar(g);
+        while (g.length > 1 && sonidos.every(function (x, i) { return x === g[i]; })) sonidos = mezclar(g);
+        hojas.push('<div class="hoja">' + self.datos() +
+          '<h3 class="hoja-subtitulo">Une cada animal con su sonido</h3>' +
+          '<p class="hoja-instr">Traza una línea desde cada animal hasta su sonido. Luego colorea los animales.</p>' +
+          '<div class="unir-filas">' + g.map(function (a, i) {
+            return '<div class="unir-fila"><div class="unir-animal colorear">' + a.svg + '</div><span class="punto"></span>' +
+              '<span class="espacio"></span><span class="punto"></span><div class="unir-sonido">' + sonidos[i].onomatopeya + '</div></div>';
+          }).join('') + '</div></div>');
+      });
+    }
+    $('#fichas-hojas').innerHTML = hojas.map(function (h) { return '<div class="hoja-marco">' + h + '</div>'; }).join('') ||
+      '<p class="consigna">Elige al menos un tipo de ficha.</p>';
+    $('#btn-imprimir').disabled = !hojas.length;
+    this.escalar();
+  },
+  // Vista previa: cada hoja A4 se achica para caber en la pantalla
+  escalar: function () {
+    var marcos = $$('.hoja-marco', $('#fichas-hojas'));
+    if (!marcos.length) return;
+    var hoja = $('.hoja', marcos[0]);
+    hoja.style.transform = 'none';
+    var ancho = hoja.offsetWidth, alto = hoja.offsetHeight;
+    var disponible = $('#fichas-hojas').clientWidth;
+    var escala = Math.min(1, disponible / ancho);
+    marcos.forEach(function (m) {
+      m.style.width = Math.floor(ancho * escala) + 'px';
+      m.style.height = Math.floor(alto * escala) + 'px';
+      $('.hoja', m).style.transform = 'scale(' + escala + ')';
+    });
+  }
+};
+
+/* =========================================================
+   16. PANTALLA DE LOGRO (común a todos los juegos)
    ========================================================= */
 var Logro = {
   reintentar: null,
@@ -2711,7 +2847,7 @@ var Logro = {
 };
 
 // Cambia la pantalla visible
-var MODOS = ['explorar', 'granja', 'jugar', 'juego', 'memoria', 'cancion', 'logro', 'album'];
+var MODOS = ['explorar', 'granja', 'jugar', 'juego', 'memoria', 'cancion', 'logro', 'album', 'fichas'];
 var MENU_DE = { explorar: 'explorar', granja: 'granja', jugar: 'jugar', juego: 'jugar', memoria: 'jugar', cancion: 'cantar', logro: 'jugar', album: 'album' };
 function mostrarModo(modo) {
   Sonido.detener();
@@ -2731,7 +2867,7 @@ function mostrarModo(modo) {
 }
 
 /* =========================================================
-   16. PANEL DOCENTE
+   17. PANEL DOCENTE
    ========================================================= */
 var Panel = {
   ultimoFoco: null,
@@ -2815,6 +2951,7 @@ var Panel = {
       self.sincronizar(); guardarPrefs();
     });
     $('#btn-pantalla').addEventListener('click', alternarPantallaCompleta);
+    $('#btn-fichas').addEventListener('click', function () { self.cerrar(); Fichas.mostrar(); });
     document.addEventListener('fullscreenchange', actualizarBotonPantalla);
     document.addEventListener('webkitfullscreenchange', actualizarBotonPantalla);
     // Escape cierra y Tab no sale del panel
@@ -2875,7 +3012,7 @@ function actualizarBotonPantalla() {
 }
 
 /* =========================================================
-   17. INICIO
+   18. INICIO
    ========================================================= */
 function iniciar() {
   cargarPrefs();
@@ -2923,6 +3060,10 @@ function iniciar() {
   $('#btn-otra-vez').addEventListener('click', function () { if (Logro.reintentar) Logro.reintentar(); });
   $('#btn-volver').addEventListener('click', function () { Explorar.mostrar(); });
   $('#btn-ver-album').addEventListener('click', function () { Album.mostrar(); });
+  $('#ficha-colorear').addEventListener('change', function () { Fichas.render(); });
+  $('#ficha-unir').addEventListener('change', function () { Fichas.render(); });
+  $('#btn-imprimir').addEventListener('click', function () { window.print(); });
+  $('#btn-fichas-volver').addEventListener('click', function () { Explorar.mostrar(); });
   $('#album-grid').addEventListener('click', function (e) {
     var b = e.target.closest('.sticker.ganado');
     if (!b) return;
@@ -2933,13 +3074,16 @@ function iniciar() {
 
   // Si la pestaña se oculta, se calla todo
   document.addEventListener('visibilitychange', function () { if (document.hidden) Sonido.detener(); });
-  window.addEventListener('resize', function () { if (Confeti.raf) Confeti.ajustar(); });
+  window.addEventListener('resize', function () {
+    if (Confeti.raf) Confeti.ajustar();
+    if (!$('#modo-fichas').hidden) Fichas.escalar();
+  });
 }
 
 iniciar();
 
 // Acceso para pruebas desde la consola
-window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Memoria: Memoria, Cancion: Cancion, GranjaViva: GranjaViva, Album: Album, Guia: Guia, Cielo: Cielo, prefs: prefs };
+window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Memoria: Memoria, Cancion: Cancion, GranjaViva: GranjaViva, Album: Album, Fichas: Fichas, Guia: Guia, Cielo: Cielo, prefs: prefs };
 })();
 </script>
 </body>
