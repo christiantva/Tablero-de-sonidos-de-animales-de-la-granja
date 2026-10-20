@@ -724,6 +724,22 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
 .mini-carta svg { width: 70%; height: auto; max-width: none; }
 
 /* =========================================================
+   ¡IMÍTALO! (micrófono)
+   ========================================================= */
+.imitar-controles { display: flex; flex-direction: column; align-items: center; gap: clamp(10px, 1.8vh, 18px); }
+.imitar-onoma { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.1; }
+#imitar-animal .ilustracion svg { transition: transform .08s linear; }
+.btn-mic svg { width: 1.1em; height: 1.1em; vertical-align: -.15em; margin-right: 6px; }
+.btn-mic[aria-pressed="true"] { background: #3ec46d; }
+.medidor {
+  width: min(420px, 100%); height: 30px; overflow: hidden;
+  background: #fff; border: 4px solid var(--tinta); border-radius: 999px;
+}
+.medidor span { display: block; width: 0; height: 100%; background: var(--amarillo); transition: width .08s linear; }
+.medidor.fuerte span { background: #3ec46d; }
+.nota-mic { margin: 0; max-width: 480px; text-align: center; font-size: 1.05rem; font-weight: 600; color: var(--tinta-suave); }
+
+/* =========================================================
    FICHAS PARA IMPRIMIR
    ========================================================= */
 .fichas { max-width: 1000px; margin: 0 auto; padding: 0 clamp(10px, 2vw, 28px); }
@@ -949,6 +965,33 @@ body[data-cielo="noche"] .escena { background: linear-gradient(#101d45, #2b3f7a 
       <div class="juego-pie">
         <div class="guia-slot" style="width:auto;padding:0"></div>
         <button type="button" class="btn-grande" id="btn-cancion">¡A cantar!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ¡Imítalo! -->
+  <section id="modo-imitar" class="modo juego" aria-labelledby="titulo-imitar" hidden>
+    <div class="tablero">
+      <div class="juego-cabecera">
+        <h2 class="juego-titulo" id="titulo-imitar">¡Imítalo!</h2>
+        <div class="progreso-zona">
+          <ol class="progreso" id="imitar-progreso"></ol>
+          <p class="ronda-texto" id="imitar-ronda"></p>
+        </div>
+      </div>
+      <div class="inverso">
+        <div class="animal-grande" id="imitar-animal"></div>
+        <div class="imitar-controles">
+          <button type="button" class="btn-escuchar" id="imitar-escuchar"></button>
+          <button type="button" class="btn-grande btn-mic" id="imitar-mic" aria-pressed="false"></button>
+          <div class="medidor" id="medidor" aria-hidden="true"><span></span></div>
+          <p class="nota-mic" id="imitar-nota">El micrófono solo mide qué tan fuerte suena la voz. No graba ni guarda nada.</p>
+          <button type="button" class="btn-grande secundario" id="imitar-manual">¡Lo hizo!</button>
+        </div>
+      </div>
+      <div class="juego-pie">
+        <div class="guia-slot" style="width:auto;padding:0"></div>
+        <button type="button" class="btn-grande btn-siguiente" id="imitar-siguiente" hidden>¡Otro animal!</button>
       </div>
     </div>
   </section>
@@ -2065,7 +2108,9 @@ var JUEGOS = [
   { id: 'cual', titulo: '¿Qué animal es?', desc: 'Mira el animal y elige su sonido.', color: '#ffe2b8',
     arte: function () { return porId('pollo').svg + ICONO_GLOBO; } },
   { id: 'memoria', titulo: 'Memoria', desc: 'Busca cada animal con su sonido.', color: '#cfe0ff',
-    arte: function () { return '<span class="mini-carta">' + ICONO_GRANERO + '</span>' + porId('pato').svg; } }
+    arte: function () { return '<span class="mini-carta">' + ICONO_GRANERO + '</span>' + porId('pato').svg; } },
+  { id: 'imitar', titulo: '¡Imítalo!', desc: 'Haz el sonido del animal con tu voz.', color: '#ffd3e0',
+    arte: function () { return '<span class="icono-grande" style="color:#d9412e">' + ICONO_MIC + '</span>' + porId('cerdo').svg; } }
 ];
 var Jugar = {
   render: function () {
@@ -2083,6 +2128,7 @@ var Jugar = {
   iniciar: function (id) {
     if (id === 'quien' || id === 'cual') Juego.iniciar(id);
     else if (id === 'memoria') Memoria.iniciar();
+    else if (id === 'imitar') Imitar.iniciar();
   },
   mostrar: function () {
     mostrarModo('jugar');
@@ -2759,7 +2805,192 @@ var Cancion = {
 };
 
 /* =========================================================
-   15. FICHAS PARA IMPRIMIR
+   15. ¡IMÍTALO! El animal responde cuando escucha una voz
+   ========================================================= */
+var ICONO_MIC = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="8" y="2" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+// Solo mide el volumen del micrófono: no graba ni envía nada
+var Microfono = {
+  stream: null, fuente: null, analizador: null, datos: null, raf: 0, activo: false,
+  base: 0.01, inicio: 0, ultimo: 0, sobre: 0, pausaHasta: 0, alNivel: null, alDetectar: null,
+  disponible: function () {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext || window.webkitAudioContext));
+  },
+  activar: function (alNivel, alDetectar) {
+    var self = this;
+    Sonido.iniciar();
+    this.alNivel = alNivel;
+    this.alDetectar = alDetectar;
+    return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+      .then(function (stream) {
+        self.stream = stream;
+        self.fuente = Sonido.ctx.createMediaStreamSource(stream);
+        self.analizador = Sonido.ctx.createAnalyser();
+        self.analizador.fftSize = 1024;
+        self.fuente.connect(self.analizador); // no se conecta a los parlantes
+        self.datos = new Uint8Array(self.analizador.fftSize);
+        self.activo = true;
+        self.base = 0.01;
+        self.sobre = 0;
+        self.inicio = self.ultimo = performance.now();
+        self.raf = requestAnimationFrame(function paso(ahora) {
+          if (!self.activo) return;
+          self.medir(ahora);
+          self.raf = requestAnimationFrame(paso);
+        });
+      });
+  },
+  medir: function (ahora) {
+    var dt = ahora - this.ultimo, suma = 0, i;
+    this.ultimo = ahora;
+    this.analizador.getByteTimeDomainData(this.datos);
+    for (i = 0; i < this.datos.length; i++) { var v = (this.datos[i] - 128) / 128; suma += v * v; }
+    var rms = Math.sqrt(suma / this.datos.length);
+    // El primer momento sirve para conocer el ruido del salón
+    if (ahora - this.inicio < 900) this.base = Math.max(this.base, rms);
+    var umbral = Math.max(0.05, this.base * 2.5);
+    var fuerte = rms > umbral;
+    if (this.alNivel) this.alNivel(Math.min(1, rms / (umbral * 2)), fuerte);
+    if (ahora < this.pausaHasta || ahora - this.inicio < 900) { this.sobre = 0; return; }
+    if (fuerte) {
+      this.sobre += dt;
+      if (this.sobre > 350) {
+        this.sobre = 0;
+        this.pausaHasta = ahora + 3500;
+        if (this.alDetectar) this.alDetectar();
+      }
+    } else {
+      this.sobre = Math.max(0, this.sobre - dt * 0.5);
+    }
+  },
+  // Evita que el micrófono reaccione al propio sonido del animal
+  pausar: function (ms) { this.pausaHasta = performance.now() + ms; },
+  apagar: function () {
+    this.activo = false;
+    cancelAnimationFrame(this.raf);
+    if (this.fuente) { try { this.fuente.disconnect(); } catch (e) { /* nada */ } }
+    if (this.stream) this.stream.getTracks().forEach(function (t) { t.stop(); });
+    this.stream = this.fuente = this.analizador = null;
+    if (this.alNivel) this.alNivel(0, false);
+  }
+};
+
+var Imitar = {
+  animales: [], indice: 0, hechos: [], nuevos: [], resuelto: false,
+  iniciar: function () {
+    this.salir();
+    this.animales = mezclar(animalesDelJuego());
+    this.indice = 0; this.hechos = []; this.nuevos = [];
+    mostrarModo('imitar');
+    $('#imitar-escuchar').innerHTML = ICONO.play + '<span>Escuchar</span>';
+    if (!Microfono.disponible()) {
+      $('#imitar-mic').disabled = true;
+      $('#imitar-nota').textContent = 'Aquí no se puede usar el micrófono. Cuando el niño imite al animal, toca «¡Lo hizo!».';
+    }
+    this.botonMic();
+    this.ronda();
+    Guia.instruir('Escucha al animal y luego imítalo con tu voz. ¡Bien fuerte!', true);
+  },
+  ronda: function () {
+    var a = this.animales[this.indice];
+    this.resuelto = false;
+    var cont = $('#imitar-animal');
+    cont.style.setProperty('--color', a.color);
+    cont.innerHTML = '<span class="ilustracion" data-animal="' + a.id + '">' + a.svg + '</span>' +
+      '<span class="imitar-onoma texto-opcional">' + a.onomatopeya + '</span>';
+    cont.setAttribute('role', 'img');
+    cont.setAttribute('aria-label', a.nombre + ': ' + a.onomatopeya);
+    var self = this;
+    $('#imitar-progreso').innerHTML = this.animales.map(function (x, i) {
+      return '<li class="' + (self.hechos[i] || (i === self.indice ? 'actual' : '')) + '">' + ICONO.estrella + '</li>';
+    }).join('');
+    $('#imitar-ronda').textContent = 'Animal ' + (this.indice + 1) + ' de ' + this.animales.length;
+    $('#imitar-siguiente').hidden = true;
+    $('#imitar-manual').disabled = false;
+    Guia.instruir('¡Haz como ' + a.articulo + ' ' + a.nombre.toLowerCase() + '!');
+  },
+  escuchar: function () {
+    Microfono.pausar(2800);
+    Sonido.reproducirAnimal(this.animales[this.indice]);
+  },
+  // Se llama cuando el micrófono escucha una voz o la docente toca «¡Lo hizo!»
+  lograr: function () {
+    if (this.resuelto) return;
+    var a = this.animales[this.indice], ultimo = this.indice === this.animales.length - 1;
+    this.resuelto = true;
+    this.hechos[this.indice] = 'oro';
+    Microfono.pausar(4500);
+    $$('#imitar-progreso li')[this.indice].className = 'oro';
+    reiniciarAnimacion($('#imitar-animal'), 'animando');
+    Confeti.lanzar();
+    var st = Album.ganar(a);
+    if (st) this.nuevos.push(st);
+    Guia.texto('¡Muy bien! Así ' + a.verbo + ' ' + a.articulo + ' ' + a.nombre.toLowerCase() + ': ' + a.onomatopeya, 'exito');
+    Guia.animar('celebrar');
+    Sonido.reproducirAnimal(a); // el animal le contesta
+    $('#imitar-manual').disabled = true;
+    var sig = $('#imitar-siguiente');
+    sig.textContent = ultimo ? '¡Ver mis estrellas!' : '¡Otro animal!';
+    sig.hidden = false;
+  },
+  siguiente: function () {
+    this.indice++;
+    if (this.indice >= this.animales.length) { this.terminar(); return; }
+    this.ronda();
+  },
+  terminar: function () {
+    var n = this.animales.length;
+    this.salir();
+    Logro.mostrar({
+      estrellas: this.hechos.slice(),
+      etiqueta: 'Animales imitados: ' + n,
+      texto: '¡Imitaste a ' + n + (n === 1 ? ' animal!' : ' animales!'),
+      animo: '¡Qué bien suenas! Los animales de la granja te entendieron.',
+      nuevos: this.nuevos,
+      reintentar: function () { Imitar.iniciar(); }
+    });
+  },
+  alternarMic: function () {
+    var self = this;
+    if (Microfono.activo) { Microfono.apagar(); this.botonMic(); return; }
+    $('#imitar-mic').disabled = true;
+    Microfono.activar(function (nivel, fuerte) { self.nivel(nivel, fuerte); }, function () { self.lograr(); })
+      .then(function () {
+        $('#imitar-mic').disabled = false;
+        self.botonMic();
+        Guia.texto('¡Te escucho! Imita al animal.', '');
+      })
+      .catch(function (err) {
+        $('#imitar-mic').disabled = false;
+        self.botonMic();
+        var negado = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+        $('#imitar-nota').textContent = negado
+          ? 'El navegador no dio permiso para usar el micrófono. Puedes permitirlo en la barra de direcciones o tocar «¡Lo hizo!».'
+          : 'No se encontró un micrófono. Cuando el niño imite al animal, toca «¡Lo hizo!».';
+        Guia.texto('No puedo escuchar. Tu profe tocará «¡Lo hizo!».', 'animo');
+      });
+  },
+  botonMic: function () {
+    var b = $('#imitar-mic');
+    b.innerHTML = ICONO_MIC + (Microfono.activo ? 'Apagar micrófono' : 'Activar micrófono');
+    b.setAttribute('aria-pressed', Microfono.activo ? 'true' : 'false');
+  },
+  // Barra de volumen y el animal que crece un poquito al escuchar
+  nivel: function (n, fuerte) {
+    var m = $('#medidor');
+    $('span', m).style.width = Math.round(n * 100) + '%';
+    m.classList.toggle('fuerte', !!fuerte);
+    var svg = $('#imitar-animal svg');
+    if (svg && !reducirMovimiento()) svg.style.transform = 'scale(' + (1 + n * 0.1).toFixed(3) + ')';
+  },
+  salir: function () {
+    if (Microfono.activo || Microfono.stream) Microfono.apagar();
+    if ($('#imitar-mic')) this.botonMic();
+  }
+};
+
+/* =========================================================
+   16. FICHAS PARA IMPRIMIR
    ========================================================= */
 var Fichas = {
   mostrar: function () {
@@ -2820,7 +3051,7 @@ var Fichas = {
 };
 
 /* =========================================================
-   16. PANTALLA DE LOGRO (común a todos los juegos)
+   17. PANTALLA DE LOGRO (común a todos los juegos)
    ========================================================= */
 var Logro = {
   reintentar: null,
@@ -2847,13 +3078,14 @@ var Logro = {
 };
 
 // Cambia la pantalla visible
-var MODOS = ['explorar', 'granja', 'jugar', 'juego', 'memoria', 'cancion', 'logro', 'album', 'fichas'];
-var MENU_DE = { explorar: 'explorar', granja: 'granja', jugar: 'jugar', juego: 'jugar', memoria: 'jugar', cancion: 'cantar', logro: 'jugar', album: 'album' };
+var MODOS = ['explorar', 'granja', 'jugar', 'juego', 'memoria', 'imitar', 'cancion', 'logro', 'album', 'fichas'];
+var MENU_DE = { explorar: 'explorar', granja: 'granja', jugar: 'jugar', juego: 'jugar', memoria: 'jugar', imitar: 'jugar', cancion: 'cantar', logro: 'jugar', album: 'album' };
 function mostrarModo(modo) {
   Sonido.detener();
   Juego.salir();
   Memoria.salir();
   Cancion.salir();
+  Imitar.salir();
   Explorar.limpiar();
   GranjaViva.limpiar();
   GranjaViva.cerrarGranero();
@@ -2867,7 +3099,7 @@ function mostrarModo(modo) {
 }
 
 /* =========================================================
-   17. PANEL DOCENTE
+   18. PANEL DOCENTE
    ========================================================= */
 var Panel = {
   ultimoFoco: null,
@@ -3012,7 +3244,7 @@ function actualizarBotonPantalla() {
 }
 
 /* =========================================================
-   18. INICIO
+   19. INICIO
    ========================================================= */
 function iniciar() {
   cargarPrefs();
@@ -3060,6 +3292,10 @@ function iniciar() {
   $('#btn-otra-vez').addEventListener('click', function () { if (Logro.reintentar) Logro.reintentar(); });
   $('#btn-volver').addEventListener('click', function () { Explorar.mostrar(); });
   $('#btn-ver-album').addEventListener('click', function () { Album.mostrar(); });
+  $('#imitar-escuchar').addEventListener('click', function () { Imitar.escuchar(); });
+  $('#imitar-mic').addEventListener('click', function () { Imitar.alternarMic(); });
+  $('#imitar-manual').addEventListener('click', function () { Imitar.lograr(); });
+  $('#imitar-siguiente').addEventListener('click', function () { Imitar.siguiente(); });
   $('#ficha-colorear').addEventListener('change', function () { Fichas.render(); });
   $('#ficha-unir').addEventListener('change', function () { Fichas.render(); });
   $('#btn-imprimir').addEventListener('click', function () { window.print(); });
@@ -3073,7 +3309,11 @@ function iniciar() {
   });
 
   // Si la pestaña se oculta, se calla todo
-  document.addEventListener('visibilitychange', function () { if (document.hidden) Sonido.detener(); });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) return;
+    Sonido.detener();
+    Imitar.salir(); // el micrófono nunca queda encendido en segundo plano
+  });
   window.addEventListener('resize', function () {
     if (Confeti.raf) Confeti.ajustar();
     if (!$('#modo-fichas').hidden) Fichas.escalar();
@@ -3083,7 +3323,7 @@ function iniciar() {
 iniciar();
 
 // Acceso para pruebas desde la consola
-window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Memoria: Memoria, Cancion: Cancion, GranjaViva: GranjaViva, Album: Album, Fichas: Fichas, Guia: Guia, Cielo: Cielo, prefs: prefs };
+window.Granja = { ANIMALES: ANIMALES, Sonido: Sonido, SINTESIS: SINTESIS, Juego: Juego, Memoria: Memoria, Cancion: Cancion, GranjaViva: GranjaViva, Album: Album, Fichas: Fichas, Imitar: Imitar, Microfono: Microfono, Guia: Guia, Cielo: Cielo, prefs: prefs };
 })();
 </script>
 </body>
